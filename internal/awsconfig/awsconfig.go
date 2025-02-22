@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	USEastRegion = "us-east-1"
+	USEastTwoRegion = "us-east-2"
 )
 
 func GetAWSConfig(ctx context.Context, env string) (aws.Config, error) {
@@ -22,7 +22,7 @@ func GetAWSConfig(ctx context.Context, env string) (aws.Config, error) {
 
 func getAWSConfig(ctx context.Context) (aws.Config, error) {
 	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion(USEastRegion),
+		config.WithRegion(USEastTwoRegion),
 	)
 
 	return cfg, err
@@ -30,7 +30,7 @@ func getAWSConfig(ctx context.Context) (aws.Config, error) {
 
 func getLocalAWSConfig(ctx context.Context) (aws.Config, error) {
 	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion(USEastRegion),
+		config.WithRegion(USEastTwoRegion),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
 				AccessKeyID: "dummy", SecretAccessKey: "dummy", SessionToken: "dummy",

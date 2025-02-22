@@ -12,15 +12,17 @@ type ErrorResponse struct {
 	Status        string `json:"status"`
 }
 
-func formatResponse(resp interface{}, statusCode int) events.APIGatewayProxyResponse {
+func FormatResponse(resp interface{}, statusCode int) events.APIGatewayProxyResponse {
 	respJson, err := json.Marshal(resp)
 	if err != nil {
-		panic("unable to create response")
+		return events.APIGatewayProxyResponse{
+			Body:       "Failed to create response body",
+			StatusCode: statusCode,
+		}
 	}
-	respStr := string(respJson)
 
 	return events.APIGatewayProxyResponse{
-		Body:       respStr,
+		Body:       string(respJson),
 		StatusCode: statusCode,
 	}
 }
@@ -30,14 +32,14 @@ func CreateBadRequestResponse() events.APIGatewayProxyResponse {
 		Status: "Bad Request",
 	}
 
-	return formatResponse(resp, http.StatusBadRequest)
+	return FormatResponse(resp, http.StatusBadRequest)
 }
 
 func CreateResourceNotFoundResponse() events.APIGatewayProxyResponse {
 	resp := &ErrorResponse{
 		Status: "Resource Not Found",
 	}
-	return formatResponse(resp, http.StatusNotFound)
+	return FormatResponse(resp, http.StatusNotFound)
 }
 
 func CreateInternalServerErrorResponse() events.APIGatewayProxyResponse {
@@ -45,5 +47,13 @@ func CreateInternalServerErrorResponse() events.APIGatewayProxyResponse {
 		Status: "Internal Server Error",
 	}
 
-	return formatResponse(resp, http.StatusInternalServerError)
+	return FormatResponse(resp, http.StatusInternalServerError)
+}
+
+func CreateAccessDeniedResponse() events.APIGatewayProxyResponse {
+	resp := &ErrorResponse{
+		Status: "Access Denied",
+	}
+
+	return FormatResponse(resp, http.StatusForbidden)
 }

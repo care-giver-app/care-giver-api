@@ -81,18 +81,28 @@ Resources:
           Properties:
             Path: /user
             Method: POST
+        GetReceivers:
+          Type: Api
           Properties:
-            Path: /user/receivers
+            Path: /user/{userId}
             Method: GET
+        AddPrimaryReceiver:
+          Type: Api
           Properties:
             Path: /user/primary-receiver
             Method: POST
+        AddAdditionalReceiver:
+          Type: Api
           Properties:
             Path: /user/additional-receiver
             Method: POST
+        GetReceiver:
+          Type: Api
           Properties:
-            Path: /receiver
+            Path: /receiver/{receiverId}
             Method: GET
+        AddReceiverEvent:
+          Type: Api
           Properties:
             Path: /receiver/event
             Method: POST
