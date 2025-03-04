@@ -5,25 +5,25 @@ import (
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/care-giver-app/care-giver-api/internal/appconfig"
+	"github.com/care-giver-app/care-giver-api/internal/handlers"
 	"github.com/care-giver-app/care-giver-api/internal/response"
 	"github.com/stretchr/testify/assert"
 )
 
-func testHandlerOne(ctx context.Context, appCfg *appconfig.AppConfig, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func testHandlerOne(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error) {
 	return events.APIGatewayProxyResponse{
 		Body: "Handler One",
 	}, nil
 }
 
-func testHandlerTwo(ctx context.Context, appCfg *appconfig.AppConfig, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func testHandlerTwo(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error) {
 	return events.APIGatewayProxyResponse{
 		Body: "Handler Two",
 	}, nil
 }
 
 func TestHandler(t *testing.T) {
-	PathToHandlerMap = map[string]func(ctx context.Context, appCfg *appconfig.AppConfig, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error){
+	PathToHandlerMap = map[string]func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error){
 		"/testPathOne":   testHandlerOne,
 		"/test/path/two": testHandlerTwo,
 	}

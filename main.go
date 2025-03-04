@@ -26,7 +26,7 @@ var (
 	userRepo     *repository.UserRepository
 	receiverRepo *repository.ReceiverRepository
 
-	PathToHandlerMap = map[string]func(ctx context.Context, appCfg *appconfig.AppConfig, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error){
+	PathToHandlerMap = map[string]func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error){
 		"/user":                     handlers.HandleCreateUser,
 		"/user/{userId}":            handlers.HandleGetUser,
 		"/user/primary-receiver":    handlers.HandleUserPrimaryReceiver,
@@ -38,38 +38,36 @@ var (
 
 func init() {
 	appCfg = appconfig.NewAppConfig()
-
-	logger := log.GetLoggerWithEnv(log.InfoLevel, appCfg.Env)
-	logger.Sugar().Infof("initializing %s", functionName)
+	appCfg.Logger.Sugar().Infof("initializing %s", functionName)
 
 	cfg, err := awsconfig.GetAWSConfig(context.TODO(), appCfg.Env)
 	if err != nil {
-		logger.Sugar().Fatalf("Unable to load SDK config: %v", err)
+		appCfg.Logger.Sugar().Fatalf("Unable to load SDK config: %v", err)
 	}
 
-	appCfg.Logger = logger
 	appCfg.AWSConfig = cfg
 
 	dynamoClient = dynamo.CreateClient(appCfg)
 
-	logger.Sugar().Info("initializing user respository")
+	appCfg.Logger.Info("initializing user respository")
 	userRepo = repository.NewUserRespository(context.TODO(), appCfg, dynamoClient)
 
-	logger.Sugar().Info("initializing receiver respository")
+	appCfg.Logger.Info("initializing receiver respository")
 	receiverRepo = repository.NewReceiverRespository(context.TODO(), appCfg, dynamoClient)
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	appCfg.Logger.Info("recieved event")
 
-	ctx = repository.ContextWithUserRespository(ctx, userRepo)
-	ctx = repository.ContextWithReceiverRespository(ctx, receiverRepo)
+	params := handlers.HandlerParams{
+		AppCfg:       appCfg,
+		Request:      req,
+		UserRepo:     userRepo,
+		ReceiverRepo: receiverRepo,
+	}
 
-	appCfg.Logger.Sugar().Infof("event path: %s", req.RequestContext.Path)
-
-	//TODO: Create handler param struct to pass in repositories as well
 	if handler, ok := PathToHandlerMap[req.RequestContext.Path]; ok {
-		return handler(ctx, appCfg, req)
+		return handler(ctx, params)
 	}
 
 	appCfg.Logger.Error("unsuported request path", zap.Any(log.PathLogKey, req.RequestContext.Path))

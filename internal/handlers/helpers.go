@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/care-giver-app/care-giver-api/internal/appconfig"
+	"github.com/care-giver-app/care-giver-api/internal/repository"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -16,6 +18,13 @@ const (
 	idSeparator           = "#"
 	idSeparatorUrlEscaped = "%23"
 )
+
+type HandlerParams struct {
+	AppCfg       *appconfig.AppConfig
+	Request      events.APIGatewayProxyRequest
+	UserRepo     repository.UserRepositoryProvider
+	ReceiverRepo repository.ReceiverRepositoryProvider
+}
 
 func validateMethod(request events.APIGatewayProxyRequest, method string) error {
 	if request.HTTPMethod != method {
@@ -27,6 +36,7 @@ func validateMethod(request events.APIGatewayProxyRequest, method string) error 
 func validatePathParameters(request events.APIGatewayProxyRequest, param string, idPrefix string) (string, error) {
 	switch len(request.PathParameters) {
 	case 0:
+		// TODO: Change this to return an error
 		return "", nil
 	case 1:
 		paramPrefixURLEscaped := fmt.Sprintf("%s%s", idPrefix, idSeparatorUrlEscaped)

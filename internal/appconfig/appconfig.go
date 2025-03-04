@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/care-giver-app/care-giver-api/internal/log"
 	"go.uber.org/zap"
 )
 
@@ -23,6 +24,7 @@ type AppConfig struct {
 func NewAppConfig() *AppConfig {
 	appCfg := &AppConfig{}
 	appCfg.ReadEnvVars()
+	appCfg.Logger = log.GetLoggerWithEnv(log.InfoLevel, appCfg.Env)
 	return appCfg
 }
 

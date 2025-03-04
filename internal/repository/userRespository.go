@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -21,18 +20,20 @@ type DynamodbClientProvider interface {
 	UpdateItem(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error)
 }
 
-type UserRepositoryContextKey string
+type UserRepositoryProvider interface {
+	CreateUser(u user.User) error
+	GetUser(uid string) (user.User, error)
+	UpdateReceiverList(uid string, rid string, listName string) error
+}
 
 const (
-	userRepoContextKey UserRepositoryContextKey = "UserRepository"
-	userID             string                   = "user_id"
-
 	PrimaryReceiverList    string = "primary_care_receivers"
 	AdditionalReceiverList string = "additional_care_receivers"
 )
 
 var (
 	updateReceiverListExpression = "SET #rl = list_append(#rl, :val)"
+	userID                       = "user_id"
 )
 
 type UserRepository struct {
@@ -118,15 +119,4 @@ func (ur *UserRepository) UpdateReceiverList(uid string, rid string, listName st
 	ur.logger.Info("successfully updated item")
 
 	return nil
-}
-func ContextWithUserRespository(ctx context.Context, ur *UserRepository) context.Context {
-	return context.WithValue(ctx, userRepoContextKey, ur)
-}
-
-func UserRepositoryFromContext(ctx context.Context) (*UserRepository, error) {
-	ur, ok := ctx.Value(userRepoContextKey).(*UserRepository)
-	if !ok {
-		return nil, errors.New("unable to get user repostiory from context")
-	}
-	return ur, nil
 }

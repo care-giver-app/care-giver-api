@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -16,16 +15,16 @@ import (
 	"go.uber.org/zap"
 )
 
-type ReceiverRepositoryContextKey string
-
-const (
-	receiverRepoContextKey ReceiverRepositoryContextKey = "ReceiverRepository"
-	receiverID                                          = "receiver_id"
-)
-
 var (
 	updateEventExpression = "SET #evt = list_append(#evt, :val)"
+	receiverID            = "receiver_id"
 )
+
+type ReceiverRepositoryProvider interface {
+	CreateReceiver(r receiver.Receiver) error
+	GetReceiver(rid receiver.ReceiverID) (receiver.Receiver, error)
+	UpdateReceiver(rid string, evt events.Event, eventName string) error
+}
 
 type ReceiverRepository struct {
 	Ctx       context.Context
@@ -116,16 +115,4 @@ func (rr *ReceiverRepository) UpdateReceiver(rid string, evt events.Event, event
 	rr.logger.Info("successfully updated item")
 
 	return nil
-}
-
-func ContextWithReceiverRespository(ctx context.Context, rr *ReceiverRepository) context.Context {
-	return context.WithValue(ctx, receiverRepoContextKey, rr)
-}
-
-func ReceiverRepositoryFromContext(ctx context.Context) (*ReceiverRepository, error) {
-	rr, ok := ctx.Value(receiverRepoContextKey).(*ReceiverRepository)
-	if !ok {
-		return nil, errors.New("unable to get user repostiory from context")
-	}
-	return rr, nil
 }
