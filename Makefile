@@ -20,7 +20,7 @@ start-api: sam-build
 	sam local start-api
 
 deploy-dev: sam-build
-	sam deploy --config-env dev --no-confirm-changeset --no-fail-on-empty-changeset
+	sam deploy --config-env dev
 
 local-atdd: 
 	cd atdd && go test
