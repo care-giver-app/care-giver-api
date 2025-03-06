@@ -1,7 +1,11 @@
+name: AWS Dev Deployment
 on:
     pull_request:
       branches:
         - main
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read
 jobs:
     deploy:
       runs-on: ubuntu-latest
