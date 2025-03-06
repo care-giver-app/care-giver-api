@@ -1,6 +1,6 @@
 name: AWS Dev Deployment
 on:
-    pull_request:
+    push:
       branches:
         - main
 permissions:
