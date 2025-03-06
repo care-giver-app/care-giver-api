@@ -1,0 +1,16 @@
+on:
+    pull_request:
+      branches:
+        - main
+jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repo
+          uses: actions/checkout@v3
+
+        - name: Setup Go
+          uses: actions/setup-go@v5
+
+        - name: Run Unit Tests
+          run: go test -short -coverprofile cover.out ./...

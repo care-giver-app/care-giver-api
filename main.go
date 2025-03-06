@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -66,12 +67,20 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 		ReceiverRepo: receiverRepo,
 	}
 
-	if handler, ok := PathToHandlerMap[req.RequestContext.Path]; ok {
+	if handler, ok := PathToHandlerMap[removePathPrefix(req.RequestContext.Path)]; ok {
 		return handler(ctx, params)
 	}
 
-	appCfg.Logger.Error("unsuported request path", zap.Any(log.PathLogKey, req.RequestContext.Path))
+	appCfg.Logger.Error("unsupported request path", zap.Any(log.PathLogKey, req.RequestContext.Path))
 	return response.CreateBadRequestResponse(), nil
+}
+
+func removePathPrefix(path string) string {
+	pathPrefixes := []string{"/Stage", "/Prod"}
+	for _, prefix := range pathPrefixes {
+		path = strings.TrimPrefix(path, prefix)
+	}
+	return path
 }
 
 func main() {

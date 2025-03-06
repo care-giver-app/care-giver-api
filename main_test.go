@@ -52,6 +52,16 @@ func TestHandler(t *testing.T) {
 				Body: "Handler Two",
 			},
 		},
+		"Happy Path - Handler Two With Prefix": {
+			request: events.APIGatewayProxyRequest{
+				RequestContext: events.APIGatewayProxyRequestContext{
+					Path: "/Stage/test/path/two",
+				},
+			},
+			expectedResponse: events.APIGatewayProxyResponse{
+				Body: "Handler Two",
+			},
+		},
 		"Sad Path - Invalid Path": {
 			request: events.APIGatewayProxyRequest{
 				RequestContext: events.APIGatewayProxyRequestContext{
