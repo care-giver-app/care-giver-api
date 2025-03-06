@@ -1,9 +1,10 @@
+name: Build App
 on:
     pull_request:
       branches:
         - main
 jobs:
-    test:
+    build:
       runs-on: ubuntu-latest
       steps:
         - name: Checkout repo
