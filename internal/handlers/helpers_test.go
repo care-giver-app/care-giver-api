@@ -48,9 +48,6 @@ func TestValidatePathParameters(t *testing.T) {
 		expectedId  string
 		expectedErr *string
 	}{
-		"Happy Path - No Path Parameters": {
-			request: events.APIGatewayProxyRequest{PathParameters: map[string]string{}},
-		},
 		"Happy Path - Validated Parameter with #": {
 			request: events.APIGatewayProxyRequest{PathParameters: map[string]string{
 				"testParam": "test#123",
@@ -66,6 +63,9 @@ func TestValidatePathParameters(t *testing.T) {
 			param:      "testParam",
 			idPrefix:   "test",
 			expectedId: "test#123",
+		},
+		"Sad Path - No Path Parameters": {
+			request: events.APIGatewayProxyRequest{PathParameters: map[string]string{}},
 		},
 		"Sad Path - Too Many Parameters": {
 			request: events.APIGatewayProxyRequest{PathParameters: map[string]string{

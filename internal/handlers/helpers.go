@@ -36,8 +36,7 @@ func validateMethod(request events.APIGatewayProxyRequest, method string) error 
 func validatePathParameters(request events.APIGatewayProxyRequest, param string, idPrefix string) (string, error) {
 	switch len(request.PathParameters) {
 	case 0:
-		// TODO: Change this to return an error
-		return "", nil
+		return "", errors.New("no path parameters provided")
 	case 1:
 		paramPrefixURLEscaped := fmt.Sprintf("%s%s", idPrefix, idSeparatorUrlEscaped)
 		dbPrefix := fmt.Sprintf("%s%s", idPrefix, idSeparator)
