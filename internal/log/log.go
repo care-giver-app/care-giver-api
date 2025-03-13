@@ -30,13 +30,19 @@ var (
 
 func GetLogger(level string) *zap.Logger {
 	logger := newLogger(level)
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		panic(err)
+	}()
 	return logger
 }
 
 func GetLoggerWithEnv(level string, env string) *zap.Logger {
 	logger := newLogger(level).With(zap.String(EnvLogKey, env))
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		panic(err)
+	}()
 	return logger
 }
 
