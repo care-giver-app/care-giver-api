@@ -1,6 +1,6 @@
 module github.com/care-giver-app/care-giver-api
 
-go 1.21.5
+go 1.23.7
 
 require (
 	github.com/aws/aws-lambda-go v1.47.0
