@@ -28,22 +28,22 @@ var (
 	PathLogKey       = "path"
 )
 
-func GetLogger(level string) *zap.Logger {
+func GetLogger(level string) (*zap.Logger, error) {
 	logger := newLogger(level)
+	var err error
 	defer func() {
-		err := logger.Sync()
-		panic(err)
+		err = logger.Sync()
 	}()
-	return logger
+	return logger, err
 }
 
-func GetLoggerWithEnv(level string, env string) *zap.Logger {
+func GetLoggerWithEnv(level string, env string) (*zap.Logger, error) {
 	logger := newLogger(level).With(zap.String(EnvLogKey, env))
+	var err error
 	defer func() {
-		err := logger.Sync()
-		panic(err)
+		err = logger.Sync()
 	}()
-	return logger
+	return logger, err
 }
 
 func newLogger(level string) *zap.Logger {
