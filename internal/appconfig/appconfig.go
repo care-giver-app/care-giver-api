@@ -24,7 +24,11 @@ type AppConfig struct {
 func NewAppConfig() *AppConfig {
 	appCfg := &AppConfig{}
 	appCfg.ReadEnvVars()
-	appCfg.Logger = log.GetLoggerWithEnv(log.InfoLevel, appCfg.Env)
+	logger, err := log.GetLoggerWithEnv(log.InfoLevel, appCfg.Env)
+	if err != nil {
+		panic(err)
+	}
+	appCfg.Logger = logger
 	return appCfg
 }
 

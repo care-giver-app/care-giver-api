@@ -8,11 +8,13 @@ import (
 )
 
 func TestGetLogger(t *testing.T) {
-	logger := GetLogger(InfoLevel)
+	logger, err := GetLogger(InfoLevel)
+	assert.Nil(t, err)
 	assert.Equal(t, logger.Level(), zap.InfoLevel)
 }
 
 func TestGetLoggerWithEnv(t *testing.T) {
-	logger := GetLoggerWithEnv(InfoLevel, "test")
+	logger, err := GetLoggerWithEnv(InfoLevel, "test")
+	assert.Nil(t, err)
 	assert.Equal(t, logger.Level(), zap.InfoLevel)
 }

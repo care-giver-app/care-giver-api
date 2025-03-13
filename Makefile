@@ -30,3 +30,6 @@ test:
 
 test-report: test
 	go tool cover -html=cover.out
+
+lint: 
+	golangci-lint run
