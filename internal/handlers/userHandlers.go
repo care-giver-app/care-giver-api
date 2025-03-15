@@ -20,10 +20,20 @@ type CreateUserRequest struct {
 	LastName  string `json:"lastName" validate:"required"`
 }
 
+type CreateUserResponse struct {
+	UserID string `json:"userId"`
+	Status string `json:"status"`
+}
+
 type PrimaryReceiverRequest struct {
 	UserID    string `json:"userId" validate:"required"`
 	FirstName string `json:"firstName" validate:"required"`
 	LastName  string `json:"lastName" validate:"required"`
+}
+
+type PrimaryReceiverResponse struct {
+	ReceiverID string `json:"receiverId"`
+	Status     string `json:"status"`
 }
 
 type AdditionalReceiverRequest struct {
@@ -60,10 +70,13 @@ func HandleCreateUser(ctx context.Context, params HandlerParams) (events.APIGate
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
+	resp := CreateUserResponse{
+		UserID: string(user.UserID),
+		Status: response.Success,
+	}
+
 	params.AppCfg.Logger.Info("processed create user event successfully")
-	return response.FormatResponse(map[string]string{
-		"status": "success",
-	}, http.StatusOK), nil
+	return response.FormatResponse(resp, http.StatusOK), nil
 }
 
 func HandleGetUser(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
@@ -123,10 +136,13 @@ func HandleUserPrimaryReceiver(ctx context.Context, params HandlerParams) (event
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
+	resp := PrimaryReceiverResponse{
+		ReceiverID: string(receiver.ReceiverID),
+		Status:     response.Success,
+	}
+
 	params.AppCfg.Logger.Info("processed add primary receiver event successfully")
-	return response.FormatResponse(map[string]string{
-		"status": "success",
-	}, http.StatusOK), nil
+	return response.FormatResponse(resp, http.StatusOK), nil
 }
 
 func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {

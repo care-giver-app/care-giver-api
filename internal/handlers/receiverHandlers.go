@@ -74,7 +74,7 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (events.APIG
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	err = newEvent.ProcessEvent(receiverEventRequest.EventData)
+	err = newEvent.ProcessEvent(receiverEventRequest.EventData, string(u.UserID))
 	if err != nil {
 		params.AppCfg.Logger.Error("error processing event data", zap.Error(err))
 		return response.CreateBadRequestResponse(), nil

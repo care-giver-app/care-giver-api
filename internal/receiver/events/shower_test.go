@@ -9,12 +9,16 @@ import (
 func TestProcessShowerEvent(t *testing.T) {
 	tests := map[string]struct {
 		event         map[string]interface{}
+		userId        string
 		expectedEvent ShowerEvent
 		expectErr     bool
 	}{
 		"Happy Path": {
-			event:         map[string]interface{}(nil),
-			expectedEvent: ShowerEvent{},
+			event:  map[string]interface{}(nil),
+			userId: "User#Test",
+			expectedEvent: ShowerEvent{
+				UserID: "User#Test",
+			},
 		},
 		"Sad Path - Unknown Fields": {
 			event: map[string]interface{}{
@@ -28,7 +32,7 @@ func TestProcessShowerEvent(t *testing.T) {
 			se := NewShowerEvent()
 			tc.expectedEvent.Timestamp = se.Timestamp
 
-			err := se.ProcessEvent(tc.event)
+			err := se.ProcessEvent(tc.event, tc.userId)
 			if tc.expectErr {
 				assert.NotNil(t, err)
 			} else {

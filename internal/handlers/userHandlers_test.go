@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -17,15 +18,14 @@ func TestHandleCreateUser(t *testing.T) {
 	tests := map[string]struct {
 		request          events.APIGatewayProxyRequest
 		expectedResponse events.APIGatewayProxyResponse
+		isSuccess        bool
 	}{
 		"Happy Path - User Added": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodPost,
 				Body:       "{\"email\": \"good@test.com\", \"firstName\":\"Demo\", \"lastName\":\"Daniel\", \"password\":\"myPass\"}",
 			},
-			expectedResponse: response.FormatResponse(map[string]string{
-				"status": "success",
-			}, http.StatusOK),
+			isSuccess: true,
 		},
 		"Sad Path - Wrong Method": {
 			request: events.APIGatewayProxyRequest{
@@ -58,8 +58,22 @@ func TestHandleCreateUser(t *testing.T) {
 			}
 			resp, err := HandleCreateUser(context.Background(), params)
 
+			expectedResponse := tc.expectedResponse
+			if tc.isSuccess {
+				var respStruct CreateUserResponse
+				testErr := json.Unmarshal([]byte(resp.Body), &respStruct)
+				assert.Nil(t, testErr)
+
+				expectedResp := CreateUserResponse{
+					UserID: respStruct.UserID,
+					Status: response.Success,
+				}
+
+				expectedResponse = response.FormatResponse(expectedResp, http.StatusOK)
+			}
+
 			assert.Nil(t, err)
-			assert.Equal(t, tc.expectedResponse, resp)
+			assert.Equal(t, expectedResponse, resp)
 		})
 	}
 }
@@ -125,15 +139,14 @@ func TestHandleUserPrimaryReceiver(t *testing.T) {
 	tests := map[string]struct {
 		request          events.APIGatewayProxyRequest
 		expectedResponse events.APIGatewayProxyResponse
+		isSuccess        bool
 	}{
 		"Happy Path - User Added": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodPost,
 				Body:       "{\"userId\": \"User#123\", \"firstName\":\"Good\", \"lastName\":\"Daniel\"}",
 			},
-			expectedResponse: response.FormatResponse(map[string]string{
-				"status": "success",
-			}, http.StatusOK),
+			isSuccess: true,
 		},
 		"Sad Path - Wrong Method": {
 			request: events.APIGatewayProxyRequest{
@@ -173,8 +186,22 @@ func TestHandleUserPrimaryReceiver(t *testing.T) {
 			}
 			resp, err := HandleUserPrimaryReceiver(context.Background(), params)
 
+			expectedResponse := tc.expectedResponse
+			if tc.isSuccess {
+				var respStruct PrimaryReceiverResponse
+				testErr := json.Unmarshal([]byte(resp.Body), &respStruct)
+				assert.Nil(t, testErr)
+
+				expectedResp := PrimaryReceiverResponse{
+					ReceiverID: respStruct.ReceiverID,
+					Status:     response.Success,
+				}
+
+				expectedResponse = response.FormatResponse(expectedResp, http.StatusOK)
+			}
+
 			assert.Nil(t, err)
-			assert.Equal(t, tc.expectedResponse, resp)
+			assert.Equal(t, expectedResponse, resp)
 		})
 	}
 }
