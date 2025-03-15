@@ -4,6 +4,7 @@ import "time"
 
 type BowelMovementEvent struct {
 	Timestamp string `json:"timestamp" dynamodbav:"timestamp"`
+	UserID    string `json:"userId" dynamodbav:"user_id"`
 }
 
 func NewBowelMovementEvent() *BowelMovementEvent {
@@ -12,10 +13,13 @@ func NewBowelMovementEvent() *BowelMovementEvent {
 	}
 }
 
-func (bme *BowelMovementEvent) ProcessEvent(event map[string]interface{}) error {
+func (bme *BowelMovementEvent) ProcessEvent(event map[string]interface{}, userId string) error {
 	err := readEvent(event, bme)
 	if err != nil {
 		return err
 	}
+
+	bme.UserID = userId
+
 	return nil
 }

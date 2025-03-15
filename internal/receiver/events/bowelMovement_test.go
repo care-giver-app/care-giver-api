@@ -9,12 +9,16 @@ import (
 func TestProcessBowelMovementEvent(t *testing.T) {
 	tests := map[string]struct {
 		event         map[string]interface{}
+		userId        string
 		expectedEvent BowelMovementEvent
 		expectErr     bool
 	}{
 		"Happy Path": {
-			event:         map[string]interface{}(nil),
-			expectedEvent: BowelMovementEvent{},
+			event:  map[string]interface{}(nil),
+			userId: "User#Test",
+			expectedEvent: BowelMovementEvent{
+				UserID: "User#Test",
+			},
 		},
 		"Sad Path - Unknown Fields": {
 			event: map[string]interface{}{
@@ -28,7 +32,7 @@ func TestProcessBowelMovementEvent(t *testing.T) {
 			bme := NewBowelMovementEvent()
 			tc.expectedEvent.Timestamp = bme.Timestamp
 
-			err := bme.ProcessEvent(tc.event)
+			err := bme.ProcessEvent(tc.event, tc.userId)
 			if tc.expectErr {
 				assert.NotNil(t, err)
 			} else {

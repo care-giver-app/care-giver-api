@@ -4,6 +4,7 @@ import "time"
 
 type UrinationEvent struct {
 	Timestamp string `json:"timestamp" dynamodbav:"timestamp"`
+	UserID    string `json:"userId" dynamodbav:"user_id"`
 }
 
 func NewUrinationEvent() *UrinationEvent {
@@ -12,10 +13,13 @@ func NewUrinationEvent() *UrinationEvent {
 	}
 }
 
-func (ue *UrinationEvent) ProcessEvent(event map[string]interface{}) error {
+func (ue *UrinationEvent) ProcessEvent(event map[string]interface{}, userId string) error {
 	err := readEvent(event, ue)
 	if err != nil {
 		return err
 	}
+
+	ue.UserID = userId
+
 	return nil
 }

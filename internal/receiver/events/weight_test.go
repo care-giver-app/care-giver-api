@@ -9,6 +9,7 @@ import (
 func TestProcessWeightEvent(t *testing.T) {
 	tests := map[string]struct {
 		event         map[string]interface{}
+		userId        string
 		expectedEvent WeightEvent
 		expectErr     bool
 	}{
@@ -16,8 +17,10 @@ func TestProcessWeightEvent(t *testing.T) {
 			event: map[string]interface{}{
 				"weight": 130.3,
 			},
+			userId: "User#Test",
 			expectedEvent: WeightEvent{
 				Weight: 130.3,
+				UserID: "User#Test",
 			},
 		},
 		"Sad Path - No Event Provided": {
@@ -40,7 +43,7 @@ func TestProcessWeightEvent(t *testing.T) {
 			we := NewWeightEvent()
 			tc.expectedEvent.Timestamp = we.Timestamp
 
-			err := we.ProcessEvent(tc.event)
+			err := we.ProcessEvent(tc.event, tc.userId)
 			if tc.expectErr {
 				assert.NotNil(t, err)
 			} else {
