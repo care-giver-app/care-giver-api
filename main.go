@@ -58,7 +58,7 @@ func init() {
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	appCfg.Logger.Info("recieved event")
+	appCfg.Logger.Info("recieved event", zap.Any("Request", req))
 
 	params := handlers.HandlerParams{
 		AppCfg:       appCfg,
