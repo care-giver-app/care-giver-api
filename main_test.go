@@ -35,7 +35,7 @@ func TestHandler(t *testing.T) {
 		"Happy Path - Handler One": {
 			request: events.APIGatewayProxyRequest{
 				RequestContext: events.APIGatewayProxyRequestContext{
-					Path: "/testPathOne",
+					ResourcePath: "/testPathOne",
 				},
 			},
 			expectedResponse: events.APIGatewayProxyResponse{
@@ -45,7 +45,7 @@ func TestHandler(t *testing.T) {
 		"Happy Path - Handler Two": {
 			request: events.APIGatewayProxyRequest{
 				RequestContext: events.APIGatewayProxyRequestContext{
-					Path: "/test/path/two",
+					ResourcePath: "/test/path/two",
 				},
 			},
 			expectedResponse: events.APIGatewayProxyResponse{
@@ -55,7 +55,7 @@ func TestHandler(t *testing.T) {
 		"Happy Path - Handler Two With Prefix": {
 			request: events.APIGatewayProxyRequest{
 				RequestContext: events.APIGatewayProxyRequestContext{
-					Path: "/Stage/test/path/two",
+					ResourcePath: "/Stage/test/path/two",
 				},
 			},
 			expectedResponse: events.APIGatewayProxyResponse{
@@ -65,7 +65,7 @@ func TestHandler(t *testing.T) {
 		"Sad Path - Invalid Path": {
 			request: events.APIGatewayProxyRequest{
 				RequestContext: events.APIGatewayProxyRequestContext{
-					Path: "/bad/path",
+					ResourcePath: "/bad/path",
 				},
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
