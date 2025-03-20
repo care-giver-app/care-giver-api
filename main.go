@@ -58,7 +58,7 @@ func init() {
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	appCfg.Logger.Info("recieved event", zap.Any("Request", req))
+	appCfg.Logger.Info("recieved event")
 
 	params := handlers.HandlerParams{
 		AppCfg:       appCfg,
@@ -67,11 +67,11 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 		ReceiverRepo: receiverRepo,
 	}
 
-	if handler, ok := PathToHandlerMap[removePathPrefix(req.RequestContext.Path)]; ok {
+	if handler, ok := PathToHandlerMap[removePathPrefix(req.RequestContext.ResourcePath)]; ok {
 		return handler(ctx, params)
 	}
 
-	appCfg.Logger.Error("unsupported request path", zap.Any(log.PathLogKey, req.RequestContext.Path))
+	appCfg.Logger.Error("unsupported request path", zap.Any(log.PathLogKey, req.RequestContext.ResourcePath))
 	return response.CreateBadRequestResponse(), nil
 }
 
