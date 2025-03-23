@@ -68,8 +68,8 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (events.APIG
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
-	newEvent, ok := receiver.NewEventMap[receiverEventRequest.EventName]
-	if !ok {
+	newEvent, err := receiver.EventFromName(receiverEventRequest.EventName)
+	if err != nil {
 		params.AppCfg.Logger.Error("unsupported event name provided", zap.Any(log.EventLogKey, receiverEventRequest.EventName), zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
