@@ -25,12 +25,21 @@ type Receiver struct {
 	Weights        []events.WeightEvent        `json:"weights" dynamodbav:"weights"`
 }
 
-var NewEventMap = map[string]events.Event{
-	"bowel_movements": events.NewBowelMovementEvent(),
-	"medications":     events.NewMedicationEvent(),
-	"showers":         events.NewShowerEvent(),
-	"urinations":      events.NewUrinationEvent(),
-	"weights":         events.NewWeightEvent(),
+func EventFromName(eventName string) (events.Event, error) {
+	switch eventName {
+	case "bowel_movements":
+		return events.NewBowelMovementEvent(), nil
+	case "medications":
+		return events.NewMedicationEvent(), nil
+	case "showers":
+		return events.NewShowerEvent(), nil
+	case "urinations":
+		return events.NewUrinationEvent(), nil
+	case "weights":
+		return events.NewWeightEvent(), nil
+	default:
+		return nil, fmt.Errorf("event name %s not supported", eventName)
+	}
 }
 
 func NewReceiver(firstName string, lastName string) *Receiver {
