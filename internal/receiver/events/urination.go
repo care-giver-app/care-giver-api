@@ -9,7 +9,7 @@ type UrinationEvent struct {
 
 func NewUrinationEvent() *UrinationEvent {
 	return &UrinationEvent{
-		Timestamp: time.Now().UTC().String(),
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
 }
 

@@ -9,7 +9,7 @@ type BowelMovementEvent struct {
 
 func NewBowelMovementEvent() *BowelMovementEvent {
 	return &BowelMovementEvent{
-		Timestamp: time.Now().UTC().String(),
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
