@@ -13,7 +13,7 @@ type WeightEvent struct {
 
 func NewWeightEvent() *WeightEvent {
 	return &WeightEvent{
-		Timestamp: time.Now().UTC().String(),
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
