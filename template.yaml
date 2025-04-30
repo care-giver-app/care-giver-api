@@ -18,6 +18,18 @@ Globals:
     LoggingConfig:
       LogFormat: JSON
 Resources:
+  CareGiverAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+      Auth:
+        DefaultAuthorizer: CareGiverAPIAuthorizer
+        Authorizers:
+          CareGiverAPIAuthorizer:
+            UserPoolArn: arn:aws:cognito-idp:us-east-2:658340567265:userpool/us-east-2_vpn29prFx
+            AuthorizationScopes:
+              - 'API/full'
   CareGiverAPIDynamoPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -76,34 +88,40 @@ Resources:
       Architectures:
       - x86_64
       Events:
-        GetPlayer:
+        AddUser:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            RestApiId: !Ref CareGiverAPI
             Path: /user
             Method: POST
-        GetReceivers:
+        GetUser:
           Type: Api
           Properties:
+            RestApiId: !Ref CareGiverAPI
             Path: /user/{userId}
             Method: GET
         AddPrimaryReceiver:
           Type: Api
           Properties:
+            RestApiId: !Ref CareGiverAPI
             Path: /user/primary-receiver
             Method: POST
         AddAdditionalReceiver:
           Type: Api
           Properties:
+            RestApiId: !Ref CareGiverAPI
             Path: /user/additional-receiver
             Method: POST
         GetReceiver:
           Type: Api
           Properties:
+            RestApiId: !Ref CareGiverAPI
             Path: /receiver/{receiverId}
             Method: GET
         AddReceiverEvent:
           Type: Api
           Properties:
+            RestApiId: !Ref CareGiverAPI
             Path: /receiver/event
             Method: POST
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
@@ -125,12 +143,9 @@ Resources:
         Ref: ApplicationResourceGroup
       AutoConfigurationEnabled: 'true'
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   CareGiverAPI:
     Description: API Gateway endpoint URL
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Env}/"
+    Value: !Sub "https://${CareGiverAPI}.execute-api.${AWS::Region}.amazonaws.com/${Env}/"
   CareGiverAPIFunction:
     Description: Function ARN
     Value: !GetAtt CareGiverAPIFunction.Arn
