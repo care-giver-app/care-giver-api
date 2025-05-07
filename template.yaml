@@ -27,9 +27,9 @@ Resources:
         DefaultAuthorizer: CareGiverAPIAuthorizer
         Authorizers:
           CareGiverAPIAuthorizer:
-            UserPoolArn: arn:aws:cognito-idp:us-east-2:658340567265:userpool/us-east-2_vpn29prFx
+            UserPoolArn: arn:aws:cognito-idp:us-east-2:658340567265:userpool/us-east-2_0JxGIf7SE
             AuthorizationScopes:
-              - 'API/full'
+              - 'aws.cognito.signin.user.admin'
   CareGiverAPIDynamoPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -94,6 +94,8 @@ Resources:
             RestApiId: !Ref CareGiverAPI
             Path: /user
             Method: POST
+            Auth:
+              Authorizer: NONE
         GetUser:
           Type: Api
           Properties:
