@@ -9,7 +9,7 @@ type ShowerEvent struct {
 
 func NewShowerEvent() *ShowerEvent {
 	return &ShowerEvent{
-		Timestamp: time.Now().UTC().String(),
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
 }
 

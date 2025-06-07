@@ -9,7 +9,7 @@ type MedicationEvent struct {
 
 func NewMedicationEvent() *MedicationEvent {
 	return &MedicationEvent{
-		Timestamp: time.Now().UTC().String(),
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
 }
 

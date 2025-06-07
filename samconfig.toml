@@ -30,12 +30,18 @@ parameter_overrides="Env=local"
 
 [default.local_start_lambda.parameters]
 warm_containers = "EAGER"
-parameter_overrides="Env=local"
+parameter_overrides=[
+    "Env=local",
+    "UserPool=arn:aws:cognito-idp:us-east-2:658340567265:userpool/us-east-2_658L7fIrG"
+]
 
 [dev]
 [dev.global.parameters]
 stack_name = "care-giver-api-dev"
-parameter_overrides="Env=dev"
+parameter_overrides=[
+    "Env=dev",
+    "UserPool=arn:aws:cognito-idp:us-east-2:658340567265:userpool/us-east-2_658L7fIrG"
+]
 
 [dev.build.parameters]
 parallel = true
@@ -53,4 +59,30 @@ resolve_image_repos = true
 resolve_s3 = true
 
 [dev.sync.parameters]
+watch = true
+
+[prod]
+[prod.global.parameters]
+stack_name = "care-giver-api-prod"
+parameter_overrides=[
+    "Env=prod",
+    "UserPool=arn:aws:cognito-idp:us-east-2:658340567265:userpool/us-east-2_0JxGIf7SE"
+]
+
+[prod.build.parameters]
+parallel = true
+
+[prod.validate.parameters]
+lint = true
+
+[prod.deploy.parameters]
+capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
+confirm_changeset = true
+resolve_s3 = true
+resolve_image_repos = true
+
+[prod.package.parameters]
+resolve_s3 = true
+
+[prod.sync.parameters]
 watch = true
