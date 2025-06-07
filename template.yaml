@@ -8,6 +8,8 @@ Description: >
 Parameters:
   Env:
     Type: String
+  UserPool:
+    Type: String
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -27,7 +29,7 @@ Resources:
         DefaultAuthorizer: CareGiverAPIAuthorizer
         Authorizers:
           CareGiverAPIAuthorizer:
-            UserPoolArn: arn:aws:cognito-idp:us-east-2:658340567265:userpool/us-east-2_0JxGIf7SE
+            UserPoolArn: !Ref UserPool
             AuthorizationScopes:
               - 'aws.cognito.signin.user.admin'
   CareGiverAPIDynamoPolicy:
@@ -80,7 +82,7 @@ Resources:
       BuildMethod: go1.x
       SamResourceId: CareGiverAPIFunction
     Properties:
-      FunctionName: care-giver-api
+      FunctionName: !Sub care-giver-api-${Env}
       Role: !GetAtt CareGiverAPIRole.Arn
       CodeUri: function.zip
       Handler: bootstrap
