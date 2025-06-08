@@ -1,25 +1,34 @@
 package events
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type UrinationEvent struct {
-	Timestamp string `json:"timestamp" dynamodbav:"timestamp"`
-	UserID    string `json:"userId" dynamodbav:"user_id"`
+	EventID    string `json:"eventId" dynamodbav:"event_id"`
+	ReceiverID string `json:"receiverId" dynamodbav:"receiver_id"`
+	UserID     string `json:"userId" dynamodbav:"user_id"`
+	Timestamp  string `json:"timestamp" dynamodbav:"timestamp"`
 }
 
-func NewUrinationEvent() *UrinationEvent {
+const eventPrefixUrination = "Urination#"
+
+func NewUrinationEvent(receiverID, userID string) *UrinationEvent {
 	return &UrinationEvent{
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		EventID:    eventPrefixUrination + uuid.New().String(),
+		ReceiverID: receiverID,
+		UserID:     userID,
+		Timestamp:  time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
-func (ue *UrinationEvent) ProcessEvent(event map[string]interface{}, userId string) error {
+func (ue *UrinationEvent) ProcessEvent(event map[string]interface{}) error {
 	err := readEvent(event, ue)
 	if err != nil {
 		return err
 	}
-
-	ue.UserID = userId
 
 	return nil
 }

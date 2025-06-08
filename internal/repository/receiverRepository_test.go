@@ -77,6 +77,14 @@ func (m *MockReceiverDB) UpdateItem(ctx context.Context, params *dynamodb.Update
 	return nil, nil
 }
 
+func (m *MockReceiverDB) Query(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+	return nil, errors.New("unsupported mock")
+}
+
+func (m *MockReceiverDB) DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+	return nil, errors.New("unsupported mock")
+}
+
 var (
 	appCfg           = appconfig.NewAppConfig()
 	testReceiverRepo = NewReceiverRespository(context.Background(), appCfg, &MockReceiverDB{})
@@ -116,21 +124,16 @@ func TestCreateReceiver(t *testing.T) {
 
 func TestGetReceiver(t *testing.T) {
 	tests := map[string]struct {
-		receiverID       receiver.ReceiverID
+		receiverID       string
 		expectedReceiver receiver.Receiver
 		expectError      bool
 	}{
 		"Happy Path - Got Receiver": {
 			receiverID: "Receiver#123",
 			expectedReceiver: receiver.Receiver{
-				ReceiverID:     "Receiver#123",
-				FirstName:      "testFirstName",
-				LastName:       "testLastName",
-				Medications:    []events.MedicationEvent{},
-				Showers:        []events.ShowerEvent{},
-				Urinations:     []events.UrinationEvent{},
-				BowelMovements: []events.BowelMovementEvent{},
-				Weights:        []events.WeightEvent{},
+				ReceiverID: "Receiver#123",
+				FirstName:  "testFirstName",
+				LastName:   "testLastName",
 			},
 		},
 		"Sad Path - Error Getting Item": {

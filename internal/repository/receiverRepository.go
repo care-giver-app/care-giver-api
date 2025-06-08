@@ -22,7 +22,7 @@ var (
 
 type ReceiverRepositoryProvider interface {
 	CreateReceiver(r receiver.Receiver) error
-	GetReceiver(rid receiver.ReceiverID) (receiver.Receiver, error)
+	GetReceiver(rid string) (receiver.Receiver, error)
 	UpdateReceiver(rid string, evt events.Event, eventName string) error
 }
 
@@ -64,12 +64,12 @@ func (rr *ReceiverRepository) CreateReceiver(r receiver.Receiver) error {
 	return nil
 }
 
-func (rr *ReceiverRepository) GetReceiver(rid receiver.ReceiverID) (receiver.Receiver, error) {
+func (rr *ReceiverRepository) GetReceiver(rid string) (receiver.Receiver, error) {
 	rr.logger.Info("getting receiver from db", zap.Any(log.ReceiverIDLogKey, rid))
 	result, err := rr.Client.GetItem(rr.Ctx, &dynamodb.GetItemInput{
 		TableName: &rr.TableName,
 		Key: map[string]types.AttributeValue{
-			receiverID: &types.AttributeValueMemberS{Value: string(rid)},
+			receiverID: &types.AttributeValueMemberS{Value: rid},
 		},
 	})
 	if err != nil {

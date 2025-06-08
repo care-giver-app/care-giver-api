@@ -1,25 +1,34 @@
 package events
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type ShowerEvent struct {
-	Timestamp string `json:"timestamp" dynamodbav:"timestamp"`
-	UserID    string `json:"userId" dynamodbav:"user_id"`
+	EventID    string `json:"eventId" dynamodbav:"event_id"`
+	ReceiverID string `json:"receiverId" dynamodbav:"receiver_id"`
+	UserID     string `json:"userId" dynamodbav:"user_id"`
+	Timestamp  string `json:"timestamp" dynamodbav:"timestamp"`
 }
 
-func NewShowerEvent() *ShowerEvent {
+const eventPrefixShower = "Shower#"
+
+func NewShowerEvent(receiverID, userID string) *ShowerEvent {
 	return &ShowerEvent{
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		EventID:    eventPrefixShower + uuid.New().String(),
+		ReceiverID: receiverID,
+		UserID:     userID,
+		Timestamp:  time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
-func (se *ShowerEvent) ProcessEvent(event map[string]interface{}, userId string) error {
+func (se *ShowerEvent) ProcessEvent(event map[string]interface{}) error {
 	err := readEvent(event, se)
 	if err != nil {
 		return err
 	}
-
-	se.UserID = userId
 
 	return nil
 }

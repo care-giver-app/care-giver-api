@@ -24,6 +24,7 @@ var (
 	TableNameLogKey  = "table name"
 	UserIDLogKey     = "user id"
 	ReceiverIDLogKey = "receiver id"
+	EventIDLogKey    = "event id"
 	EventLogKey      = "event name"
 	PathLogKey       = "path"
 )

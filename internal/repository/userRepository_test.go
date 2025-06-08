@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/care-giver-app/care-giver-api/internal/receiver"
 	"github.com/care-giver-app/care-giver-api/internal/user"
 	"github.com/stretchr/testify/assert"
 )
@@ -72,6 +71,24 @@ func (m *MockUserRepository) UpdateItem(ctx context.Context, params *dynamodb.Up
 	return nil, errors.New("unsupported mock")
 }
 
+func (m *MockUserRepository) Query(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+	return nil, errors.New("unsupported mock")
+}
+
+func (m *MockUserRepository) DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+	if av, found := params.Key["user_id"]; found {
+		if id, ok := av.(*types.AttributeValueMemberS); ok {
+			switch id.Value {
+			case "User#123":
+				return &dynamodb.DeleteItemOutput{}, nil
+			case "Delete Item Error":
+				return nil, errors.New("An error occured during Delete Item")
+			}
+		}
+	}
+	return nil, errors.New("unsupported mock")
+}
+
 var (
 	testUserRepo = NewUserRespository(context.Background(), appCfg, &MockUserRepository{})
 )
@@ -120,7 +137,7 @@ func TestGetUser(t *testing.T) {
 				UserID:               "User#123",
 				FirstName:            "testFirstName",
 				LastName:             "testLastName",
-				PrimaryCareReceivers: []receiver.ReceiverID{},
+				PrimaryCareReceivers: []string,
 			},
 		},
 		"Sad Path - Error Getting Item": {

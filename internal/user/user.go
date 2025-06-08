@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/care-giver-app/care-giver-api/internal/receiver"
 	"github.com/google/uuid"
 )
 
@@ -17,13 +16,13 @@ const (
 type UserID string
 
 type User struct {
-	UserID                  UserID                `json:"userId" dynamodbav:"user_id"`
-	Email                   string                `json:"email" dynamodbav:"email"`
-	Password                []byte                `json:"password" dynamodbav:"password"`
-	FirstName               string                `json:"firstName" dynamodbav:"first_name"`
-	LastName                string                `json:"lastName" dynamodbav:"last_name"`
-	PrimaryCareReceivers    []receiver.ReceiverID `json:"primaryCareReceivers" dynamodbav:"primary_care_receivers"`
-	AdditionalCareReceivers []receiver.ReceiverID `json:"additionalCareReceivers" dynamodbav:"additional_care_receivers"`
+	UserID                  string   `json:"userId" dynamodbav:"user_id"`
+	Email                   string   `json:"email" dynamodbav:"email"`
+	Password                []byte   `json:"password" dynamodbav:"password"`
+	FirstName               string   `json:"firstName" dynamodbav:"first_name"`
+	LastName                string   `json:"lastName" dynamodbav:"last_name"`
+	PrimaryCareReceivers    []string `json:"primaryCareReceivers" dynamodbav:"primary_care_receivers"`
+	AdditionalCareReceivers []string `json:"additionalCareReceivers" dynamodbav:"additional_care_receivers"`
 }
 
 func NewUser(email string, password string, firstName string, lastName string) (*User, error) {
@@ -35,17 +34,17 @@ func NewUser(email string, password string, firstName string, lastName string) (
 	encryptedPassword := hashFunc.Sum(nil)
 
 	return &User{
-		UserID:                  UserID(fmt.Sprintf("%s#%s", DBPrefix, uuid.New())),
+		UserID:                  fmt.Sprintf("%s#%s", DBPrefix, uuid.New()),
 		Email:                   email,
 		Password:                encryptedPassword,
 		FirstName:               firstName,
 		LastName:                lastName,
-		PrimaryCareReceivers:    []receiver.ReceiverID{},
-		AdditionalCareReceivers: []receiver.ReceiverID{},
+		PrimaryCareReceivers:    []string{},
+		AdditionalCareReceivers: []string{},
 	}, nil
 }
 
-func (u *User) IsACareGiver(rid receiver.ReceiverID) bool {
+func (u *User) IsACareGiver(rid string) bool {
 	receiverList := append(u.PrimaryCareReceivers, u.AdditionalCareReceivers...)
 	return slices.Contains(receiverList, rid)
 }

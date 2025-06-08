@@ -24,6 +24,7 @@ type HandlerParams struct {
 	Request      events.APIGatewayProxyRequest
 	UserRepo     repository.UserRepositoryProvider
 	ReceiverRepo repository.ReceiverRepositoryProvider
+	EventRepo    repository.EventRepositoryProvider
 }
 
 func validateMethod(request events.APIGatewayProxyRequest, method string) error {

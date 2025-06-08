@@ -32,7 +32,7 @@ func HandleReceiver(ctx context.Context, params HandlerParams) (events.APIGatewa
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	r, err := params.ReceiverRepo.GetReceiver(receiver.ReceiverID(rid))
+	r, err := params.ReceiverRepo.GetReceiver(rid)
 	if err != nil {
 		params.AppCfg.Logger.Error("error retrieving receiver from db", zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
@@ -50,41 +50,47 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (events.APIG
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	var receiverEventRequest ReceiverEventRequest
-	err = readRequestBody(params.Request.Body, &receiverEventRequest)
+	var rer ReceiverEventRequest
+	err = readRequestBody(params.Request.Body, &rer)
 	if err != nil {
 		params.AppCfg.Logger.Error("error reading request body", zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	u, err := params.UserRepo.GetUser(receiverEventRequest.UserID)
+	u, err := params.UserRepo.GetUser(rer.UserID)
 	if err != nil {
 		params.AppCfg.Logger.Error("error retrieving user from db", zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	if !u.IsACareGiver(receiver.ReceiverID(receiverEventRequest.ReceiverID)) {
-		params.AppCfg.Logger.Sugar().Errorf("user %s is unauthorized to access receiver %s", u.UserID, receiverEventRequest.ReceiverID)
+	if !u.IsACareGiver(rer.ReceiverID) {
+		params.AppCfg.Logger.Sugar().Errorf("user %s is unauthorized to access receiver %s", u.UserID, rer.ReceiverID)
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
-	newEvent, err := receiver.EventFromName(receiverEventRequest.EventName)
+	newEvent, err := receiver.GenerateEvent(rer.EventName, rer.ReceiverID, u.UserID)
 	if err != nil {
-		params.AppCfg.Logger.Error("unsupported event name provided", zap.Any(log.EventLogKey, receiverEventRequest.EventName), zap.Error(err))
+		params.AppCfg.Logger.Error("unsupported event name provided", zap.Any(log.EventLogKey, rer.EventName), zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	err = newEvent.ProcessEvent(receiverEventRequest.EventData, string(u.UserID))
+	err = newEvent.ProcessEvent(rer.EventData)
 	if err != nil {
 		params.AppCfg.Logger.Error("error processing event data", zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	err = params.ReceiverRepo.UpdateReceiver(receiverEventRequest.ReceiverID, newEvent, receiverEventRequest.EventName)
+	err = params.EventRepo.AddEvent(newEvent)
 	if err != nil {
-		params.AppCfg.Logger.Error("error updating receiver in db", zap.Error(err))
+		params.AppCfg.Logger.Error("error adding event to db", zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
+
+	// err = params.ReceiverRepo.UpdateReceiver(rer.ReceiverID, newEvent, rer.EventName)
+	// if err != nil {
+	// 	params.AppCfg.Logger.Error("error updating receiver in db", zap.Error(err))
+	// 	return response.CreateInternalServerErrorResponse(), nil
+	// }
 
 	params.AppCfg.Logger.Info("processed add receiver event successfully")
 	return response.FormatResponse(map[string]string{

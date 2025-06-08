@@ -8,7 +8,7 @@ import (
 )
 
 type Event interface {
-	ProcessEvent(event map[string]interface{}, userId string) error
+	ProcessEvent(event map[string]interface{}) error
 }
 
 func readEvent(event map[string]interface{}, eventStruct interface{}) error {

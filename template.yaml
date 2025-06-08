@@ -126,13 +126,26 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref CareGiverAPI
-            Path: /receiver/event
+            Path: /event
             Method: POST
+        GetReceiverEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /event/{eventId}
+            Method: GET
+        DeleteReceiverEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /event/{eventId}
+            Method: DELETE
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           ENV: !Ref Env
           USER_TABLE_NAME: !Sub user-table-${Env}
           RECEIVER_TABLE_NAME: !Sub receiver-table-${Env}
+          EVENT_TABLE_NAME: !Sub event-table-${Env}
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

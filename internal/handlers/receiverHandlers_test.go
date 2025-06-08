@@ -31,7 +31,7 @@ func (mu *MockUserRepo) GetUser(uid string) (user.User, error) {
 	switch uid {
 	case "User#123":
 		return user.User{
-			PrimaryCareReceivers: []receiver.ReceiverID{"Receiver#123", "Receiver#123Error"},
+			PrimaryCareReceivers: []string{"Receiver#123", "Receiver#123Error"},
 		}, nil
 	case "User#NotACareGiver":
 		return user.User{}, nil
@@ -63,13 +63,13 @@ func (mr *MockReceiverRepo) CreateReceiver(r receiver.Receiver) error {
 	return errors.New("unsupported mock")
 }
 
-func (mr *MockReceiverRepo) GetReceiver(rid receiver.ReceiverID) (receiver.Receiver, error) {
+func (mr *MockReceiverRepo) GetReceiver(rid string) (receiver.Receiver, error) {
 	switch rid {
-	case receiver.ReceiverID("Receiver#123"):
+	case "Receiver#123":
 		return receiver.Receiver{
 			FirstName: "Success",
 		}, nil
-	case receiver.ReceiverID("Receiver#Error"):
+	case "Receiver#Error":
 		return receiver.Receiver{}, errors.New("error retrieving from db")
 	}
 	return receiver.Receiver{}, errors.New("unsupported mock")

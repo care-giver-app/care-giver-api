@@ -1,25 +1,34 @@
 package events
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type BowelMovementEvent struct {
-	Timestamp string `json:"timestamp" dynamodbav:"timestamp"`
-	UserID    string `json:"userId" dynamodbav:"user_id"`
+	EventID    string `json:"eventId" dynamodbav:"event_id"`
+	ReceiverID string `json:"receiverId" dynamodbav:"receiver_id"`
+	UserID     string `json:"userId" dynamodbav:"user_id"`
+	Timestamp  string `json:"timestamp" dynamodbav:"timestamp"`
 }
 
-func NewBowelMovementEvent() *BowelMovementEvent {
+const eventPrefixBowelMovement = "BowelMovement#"
+
+func NewBowelMovementEvent(receiverID, userID string) *BowelMovementEvent {
 	return &BowelMovementEvent{
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		EventID:    eventPrefixBowelMovement + uuid.New().String(),
+		ReceiverID: receiverID,
+		UserID:     userID,
+		Timestamp:  time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
-func (bme *BowelMovementEvent) ProcessEvent(event map[string]interface{}, userId string) error {
+func (bme *BowelMovementEvent) ProcessEvent(event map[string]interface{}) error {
 	err := readEvent(event, bme)
 	if err != nil {
 		return err
 	}
-
-	bme.UserID = userId
 
 	return nil
 }

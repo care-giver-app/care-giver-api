@@ -12,31 +12,24 @@ const (
 	ParamId  = "receiverId"
 )
 
-type ReceiverID string
-
 type Receiver struct {
-	ReceiverID     ReceiverID                  `json:"receiverId" dynamodbav:"receiver_id"`
-	FirstName      string                      `json:"firstName" dynamodbav:"first_name"`
-	LastName       string                      `json:"lastName" dynamodbav:"last_name"`
-	Medications    []events.MedicationEvent    `json:"medications" dynamodbav:"medications"`
-	Showers        []events.ShowerEvent        `json:"showers" dynamodbav:"showers"`
-	Urinations     []events.UrinationEvent     `json:"urinations" dynamodbav:"urinations"`
-	BowelMovements []events.BowelMovementEvent `json:"bowelMovements" dynamodbav:"bowel_movements"`
-	Weights        []events.WeightEvent        `json:"weights" dynamodbav:"weights"`
+	ReceiverID string `json:"receiverId" dynamodbav:"receiver_id"`
+	FirstName  string `json:"firstName" dynamodbav:"first_name"`
+	LastName   string `json:"lastName" dynamodbav:"last_name"`
 }
 
-func EventFromName(eventName string) (events.Event, error) {
+func GenerateEvent(eventName, receiverID, userID string) (events.Event, error) {
 	switch eventName {
 	case "bowel_movements":
-		return events.NewBowelMovementEvent(), nil
+		return events.NewBowelMovementEvent(receiverID, userID), nil
 	case "medications":
-		return events.NewMedicationEvent(), nil
+		return events.NewMedicationEvent(receiverID, userID), nil
 	case "showers":
-		return events.NewShowerEvent(), nil
+		return events.NewShowerEvent(receiverID, userID), nil
 	case "urinations":
-		return events.NewUrinationEvent(), nil
+		return events.NewUrinationEvent(receiverID, userID), nil
 	case "weights":
-		return events.NewWeightEvent(), nil
+		return events.NewWeightEvent(receiverID, userID), nil
 	default:
 		return nil, fmt.Errorf("event name %s not supported", eventName)
 	}
@@ -44,13 +37,8 @@ func EventFromName(eventName string) (events.Event, error) {
 
 func NewReceiver(firstName string, lastName string) *Receiver {
 	return &Receiver{
-		ReceiverID:     ReceiverID(fmt.Sprintf("%s#%s", DBPrefix, uuid.New())),
-		FirstName:      firstName,
-		LastName:       lastName,
-		Medications:    []events.MedicationEvent{},
-		Showers:        []events.ShowerEvent{},
-		Urinations:     []events.UrinationEvent{},
-		BowelMovements: []events.BowelMovementEvent{},
-		Weights:        []events.WeightEvent{},
+		ReceiverID: fmt.Sprintf("%s#%s", DBPrefix, uuid.New()),
+		FirstName:  firstName,
+		LastName:   lastName,
 	}
 }

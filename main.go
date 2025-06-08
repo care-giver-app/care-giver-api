@@ -26,6 +26,7 @@ var (
 	appCfg       *appconfig.AppConfig
 	userRepo     *repository.UserRepository
 	receiverRepo *repository.ReceiverRepository
+	eventRepo    *repository.EventRepository
 
 	PathToHandlerMap = map[string]func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error){
 		"/user":                     handlers.HandleCreateUser,
@@ -55,6 +56,9 @@ func init() {
 
 	appCfg.Logger.Info("initializing receiver respository")
 	receiverRepo = repository.NewReceiverRespository(context.TODO(), appCfg, dynamoClient)
+
+	appCfg.Logger.Info("initializing event repository")
+	eventRepo = repository.NewEventRespository(context.TODO(), appCfg, dynamoClient)
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -65,6 +69,7 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 		Request:      req,
 		UserRepo:     userRepo,
 		ReceiverRepo: receiverRepo,
+		EventRepo:    eventRepo,
 	}
 
 	if handler, ok := PathToHandlerMap[removePathPrefix(req.RequestContext.ResourcePath)]; ok {

@@ -1,6 +1,7 @@
 package events
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,7 +10,8 @@ import (
 func TestProcessWeightEvent(t *testing.T) {
 	tests := map[string]struct {
 		event         map[string]interface{}
-		userId        string
+		receiverID    string
+		userID        string
 		expectedEvent WeightEvent
 		expectErr     bool
 	}{
@@ -17,10 +19,12 @@ func TestProcessWeightEvent(t *testing.T) {
 			event: map[string]interface{}{
 				"weight": 130.3,
 			},
-			userId: "User#Test",
+			receiverID: "Receiver#Test",
+			userID:     "User#Test",
 			expectedEvent: WeightEvent{
-				Weight: 130.3,
-				UserID: "User#Test",
+				Weight:     130.3,
+				ReceiverID: "Receiver#Test",
+				UserID:     "User#Test",
 			},
 		},
 		"Sad Path - No Event Provided": {
@@ -40,15 +44,17 @@ func TestProcessWeightEvent(t *testing.T) {
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			we := NewWeightEvent()
+			we := NewWeightEvent(tc.receiverID, tc.userID)
 			tc.expectedEvent.Timestamp = we.Timestamp
+			tc.expectedEvent.EventID = we.EventID
 
-			err := we.ProcessEvent(tc.event, tc.userId)
+			err := we.ProcessEvent(tc.event)
 			if tc.expectErr {
 				assert.NotNil(t, err)
 			} else {
 				assert.Nil(t, err)
 				assert.Equal(t, tc.expectedEvent, *we)
+				assert.True(t, strings.HasPrefix(we.EventID, eventPrefixWeight))
 			}
 		})
 	}

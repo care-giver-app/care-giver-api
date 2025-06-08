@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/care-giver-app/care-giver-api/internal/appconfig"
-	"github.com/care-giver-app/care-giver-api/internal/receiver"
 	"github.com/care-giver-app/care-giver-api/internal/response"
 	"github.com/care-giver-app/care-giver-api/internal/user"
 	"github.com/stretchr/testify/assert"
@@ -91,7 +90,7 @@ func TestHandleGetUser(t *testing.T) {
 				},
 			},
 			expectedResponse: response.FormatResponse(user.User{
-				PrimaryCareReceivers: []receiver.ReceiverID{"Receiver#123", "Receiver#123Error"},
+				PrimaryCareReceivers: []string{"Receiver#123", "Receiver#123Error"},
 			}, http.StatusOK),
 		},
 		"Sad Path - Wrong Method": {

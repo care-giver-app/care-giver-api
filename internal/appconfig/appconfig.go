@@ -19,6 +19,7 @@ type AppConfig struct {
 	Logger            *zap.Logger
 	UserTableName     string
 	ReceiverTableName string
+	EventTableName    string
 }
 
 func NewAppConfig() *AppConfig {
@@ -36,6 +37,7 @@ func (a *AppConfig) ReadEnvVars() {
 	a.Env = getEnvVarStringOrDefault("ENV", LocalEnv)
 	a.UserTableName = getEnvVarStringOrDefault("USER_TABLE_NAME", fmt.Sprintf("%s-%s", "user-table", LocalEnv))
 	a.ReceiverTableName = getEnvVarStringOrDefault("RECEIVER_TABLE_NAME", fmt.Sprintf("%s-%s", "receiver-table", LocalEnv))
+	a.EventTableName = getEnvVarStringOrDefault("EVENT_TABLE_NAME", fmt.Sprintf("%s-%s", "event-table", LocalEnv))
 }
 
 func getEnvVarStringOrDefault(envVar string, defaultValue string) string {
