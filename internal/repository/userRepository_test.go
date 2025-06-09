@@ -137,7 +137,7 @@ func TestGetUser(t *testing.T) {
 				UserID:               "User#123",
 				FirstName:            "testFirstName",
 				LastName:             "testLastName",
-				PrimaryCareReceivers: []string,
+				PrimaryCareReceivers: []string{},
 			},
 		},
 		"Sad Path - Error Getting Item": {
