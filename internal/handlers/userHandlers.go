@@ -15,7 +15,6 @@ import (
 
 type CreateUserRequest struct {
 	Email     string `json:"email" validate:"required"`
-	Password  string `json:"password" validate:"required"`
 	FirstName string `json:"firstName" validate:"required"`
 	LastName  string `json:"lastName" validate:"required"`
 }
@@ -57,7 +56,7 @@ func HandleCreateUser(ctx context.Context, params HandlerParams) (events.APIGate
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	user, err := user.NewUser(createUserRequest.Email, createUserRequest.Password, createUserRequest.FirstName, createUserRequest.LastName)
+	user, err := user.NewUser(createUserRequest.Email, createUserRequest.FirstName, createUserRequest.LastName)
 	if err != nil {
 		params.AppCfg.Logger.Error("error creating new user", zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
