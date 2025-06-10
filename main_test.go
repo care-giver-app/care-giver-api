@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -10,24 +12,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testHandlerOne(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{
-		Body: "Handler One",
-	}, nil
+type MockRegistry struct{}
+
+func (m *MockRegistry) GetHandler(request events.APIGatewayProxyRequest) (func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error), bool) {
+	fmt.Printf("Received request: %v\n", request)
+	if request.RequestContext.ResourcePath == "/good/path" {
+		return func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error) {
+			return events.APIGatewayProxyResponse{
+				Body: "Handler One",
+			}, nil
+		}, true
+	}
+	return nil, false
 }
 
-func testHandlerTwo(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{
-		Body: "Handler Two",
-	}, nil
+func (m *MockRegistry) RunHandler(ctx context.Context, handler func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error), request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if handler != nil {
+		params := handlers.HandlerParams{
+			Request: request,
+		}
+		return handler(ctx, params)
+	}
+	return events.APIGatewayProxyResponse{}, errors.New("handler not supported")
 }
 
 func TestHandler(t *testing.T) {
-	PathToHandlerMap = map[string]func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error){
-		"/testPathOne":   testHandlerOne,
-		"/test/path/two": testHandlerTwo,
-	}
-
 	tests := map[string]struct {
 		request          events.APIGatewayProxyRequest
 		expectedResponse events.APIGatewayProxyResponse
@@ -35,31 +44,12 @@ func TestHandler(t *testing.T) {
 		"Happy Path - Handler One": {
 			request: events.APIGatewayProxyRequest{
 				RequestContext: events.APIGatewayProxyRequestContext{
-					ResourcePath: "/testPathOne",
+					ResourcePath: "/good/path",
 				},
+				HTTPMethod: "POST",
 			},
 			expectedResponse: events.APIGatewayProxyResponse{
 				Body: "Handler One",
-			},
-		},
-		"Happy Path - Handler Two": {
-			request: events.APIGatewayProxyRequest{
-				RequestContext: events.APIGatewayProxyRequestContext{
-					ResourcePath: "/test/path/two",
-				},
-			},
-			expectedResponse: events.APIGatewayProxyResponse{
-				Body: "Handler Two",
-			},
-		},
-		"Happy Path - Handler Two With Prefix": {
-			request: events.APIGatewayProxyRequest{
-				RequestContext: events.APIGatewayProxyRequestContext{
-					ResourcePath: "/Stage/test/path/two",
-				},
-			},
-			expectedResponse: events.APIGatewayProxyResponse{
-				Body: "Handler Two",
 			},
 		},
 		"Sad Path - Invalid Path": {
@@ -67,10 +57,14 @@ func TestHandler(t *testing.T) {
 				RequestContext: events.APIGatewayProxyRequestContext{
 					ResourcePath: "/bad/path",
 				},
+				HTTPMethod: "GET",
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
 		},
 	}
+
+	handlerRegistry = &MockRegistry{}
+
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			resp, err := handler(context.Background(), tc.request)

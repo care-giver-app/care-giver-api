@@ -1,7 +1,6 @@
 package user
 
 import (
-	"crypto/sha256"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,27 +10,18 @@ var (
 	testFirstName = "Demo"
 	testLastName  = "Daniel"
 	testEmail     = "Demo.Daniel@email.com"
-	testPassword  = "myPass"
 )
 
 func TestNewUser(t *testing.T) {
-	hashFunc := sha256.New()
-	_, err := hashFunc.Write([]byte(testPassword))
-	if err != nil {
-		return
-	}
-	encryptedPassword := hashFunc.Sum(nil)
-
 	expectedUser := &User{
 		FirstName:               testFirstName,
 		LastName:                testLastName,
-		Password:                encryptedPassword,
 		Email:                   testEmail,
 		PrimaryCareReceivers:    []string{},
 		AdditionalCareReceivers: []string{},
 	}
 
-	user, err := NewUser(testEmail, testPassword, testFirstName, testLastName)
+	user, err := NewUser(testEmail, testFirstName, testLastName)
 	assert.Nil(t, err)
 
 	expectedUser.UserID = user.UserID
@@ -39,7 +29,7 @@ func TestNewUser(t *testing.T) {
 }
 
 func TestIsACareGiver(t *testing.T) {
-	user, err := NewUser(testEmail, testPassword, testFirstName, testLastName)
+	user, err := NewUser(testEmail, testFirstName, testLastName)
 	assert.Nil(t, err)
 
 	tests := map[string]struct {

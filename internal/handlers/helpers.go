@@ -9,8 +9,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/care-giver-app/care-giver-api/internal/appconfig"
-	"github.com/care-giver-app/care-giver-api/internal/repository"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -18,14 +16,6 @@ const (
 	idSeparator           = "#"
 	idSeparatorUrlEscaped = "%23"
 )
-
-type HandlerParams struct {
-	AppCfg       *appconfig.AppConfig
-	Request      events.APIGatewayProxyRequest
-	UserRepo     repository.UserRepositoryProvider
-	ReceiverRepo repository.ReceiverRepositoryProvider
-	EventRepo    repository.EventRepositoryProvider
-}
 
 func validateMethod(request events.APIGatewayProxyRequest, method string) error {
 	if request.HTTPMethod != method {
