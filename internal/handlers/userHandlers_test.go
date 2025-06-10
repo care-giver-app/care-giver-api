@@ -23,7 +23,7 @@ func TestHandleCreateUser(t *testing.T) {
 		"Happy Path - User Added": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodPost,
-				Body:       "{\"email\": \"good@test.com\", \"firstName\":\"Demo\", \"lastName\":\"Daniel\", \"password\":\"myPass\"}",
+				Body:       "{\"email\": \"good@test.com\", \"firstName\":\"Demo\", \"lastName\":\"Daniel\"}",
 			},
 			isSuccess: true,
 		},
@@ -43,7 +43,7 @@ func TestHandleCreateUser(t *testing.T) {
 		"Sad Path - Error Add User To DB": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodPost,
-				Body:       "{\"email\": \"error@test.com\", \"firstName\":\"Demo\", \"lastName\":\"Daniel\", \"password\":\"myPass\"}",
+				Body:       "{\"email\": \"error@test.com\", \"firstName\":\"Demo\", \"lastName\":\"Daniel\"}",
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
