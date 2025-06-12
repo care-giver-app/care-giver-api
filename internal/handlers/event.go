@@ -73,7 +73,7 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 	return response.FormatResponse(ReceiverEventResponse{
 		ReceiverID: rer.ReceiverID,
 		EventID:    newEvent.EventID,
-		Status:     "Success",
+		Status:     response.Success,
 	}, http.StatusOK), nil
 }
 
@@ -118,7 +118,7 @@ func HandleDeleteReceiverEvent(ctx context.Context, params HandlerParams) (awsev
 	params.AppCfg.Logger.Info("processed delete receiver event successfully")
 	return response.FormatResponse(
 		map[string]string{
-			"status": "success",
+			"status": response.Success,
 		}, http.StatusOK,
 	), nil
 }

@@ -90,7 +90,7 @@ func TestHandleGetUser(t *testing.T) {
 				},
 			},
 			expectedResponse: response.FormatResponse(user.User{
-				PrimaryCareReceivers: []string{"Receiver#123", "Receiver#123Error"},
+				PrimaryCareReceivers: []string{"Receiver#123", "Receiver#Error"},
 			}, http.StatusOK),
 		},
 		"Sad Path - Wrong Method": {
@@ -216,7 +216,7 @@ func TestHandleUserAdditionalReceiver(t *testing.T) {
 				Body:       "{\"userId\": \"User#123\", \"receiverId\":\"Receiver#789\"}",
 			},
 			expectedResponse: response.FormatResponse(map[string]string{
-				"status": "success",
+				"status": "Success",
 			}, http.StatusOK),
 		},
 		"Sad Path - Wrong Method": {

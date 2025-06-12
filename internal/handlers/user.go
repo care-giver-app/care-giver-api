@@ -144,6 +144,6 @@ func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (ev
 
 	params.AppCfg.Logger.Info("processed add additional receiver event successfully")
 	return response.FormatResponse(map[string]string{
-		"status": "success",
+		"status": response.Success,
 	}, http.StatusOK), nil
 }

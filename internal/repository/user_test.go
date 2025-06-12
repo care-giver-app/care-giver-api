@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/care-giver-app/care-giver-api/internal/appconfig"
 	"github.com/care-giver-app/care-giver-api/internal/user"
 	"github.com/stretchr/testify/assert"
 )
@@ -89,11 +90,10 @@ func (m *MockUserRepository) DeleteItem(ctx context.Context, params *dynamodb.De
 	return nil, errors.New("unsupported mock")
 }
 
-var (
-	testUserRepo = NewUserRespository(context.Background(), appCfg, &MockUserRepository{})
-)
-
 func TestCreateUser(t *testing.T) {
+	appCfg := appconfig.NewAppConfig()
+	testUserRepo := NewUserRespository(context.Background(), appCfg, &MockUserRepository{})
+
 	tests := map[string]struct {
 		user        user.User
 		expectError bool
@@ -126,6 +126,9 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
+	appCfg := appconfig.NewAppConfig()
+	testUserRepo := NewUserRespository(context.Background(), appCfg, &MockUserRepository{})
+
 	tests := map[string]struct {
 		userID       string
 		expectedUser user.User
@@ -164,6 +167,9 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
+	appCfg := appconfig.NewAppConfig()
+	testUserRepo := NewUserRespository(context.Background(), appCfg, &MockUserRepository{})
+
 	tests := map[string]struct {
 		userID      string
 		expectError bool

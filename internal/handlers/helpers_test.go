@@ -79,6 +79,62 @@ func TestValidatePathParameters(t *testing.T) {
 	}
 }
 
+func TestValidateQueryParameters(t *testing.T) {
+	tests := map[string]struct {
+		request       events.APIGatewayProxyRequest
+		param         string
+		expectedValue string
+		expectedErr   string
+	}{
+		"Happy Path": {
+			request: events.APIGatewayProxyRequest{
+				QueryStringParameters: map[string]string{
+					"queryParam": "queryValue",
+				},
+			},
+			param:         "queryParam",
+			expectedValue: "queryValue",
+		},
+		"Sad Path - No Query Parameters": {
+			request: events.APIGatewayProxyRequest{
+				QueryStringParameters: map[string]string{},
+			},
+			param:       "queryParam",
+			expectedErr: "no query parameters provided",
+		},
+		"Sad Path - Empty Query Param": {
+			request: events.APIGatewayProxyRequest{
+				QueryStringParameters: map[string]string{
+					"queryParam": "",
+				},
+			},
+			param:       "queryParam",
+			expectedErr: "query parameter value is empty",
+		},
+		"Sad Path - Not Found": {
+			request: events.APIGatewayProxyRequest{
+				QueryStringParameters: map[string]string{
+					"queryParam": "queryValue",
+				},
+			},
+			param:       "diffParam",
+			expectedErr: "query parameter 'diffParam' not found",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			v, err := validateQueryParameters(tc.request, tc.param)
+			if tc.expectedErr != "" {
+				assert.Equal(t, tc.expectedErr, err.Error())
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, tc.expectedValue, v)
+			}
+		})
+	}
+}
+
 type TestRequestStruct struct {
 	FieldOne   string            `json:"fieldOne" validate:"required"`
 	FieldTwo   float64           `json:"fieldTwo" validate:"required"`

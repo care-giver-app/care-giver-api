@@ -30,7 +30,7 @@ func (mu *MockUserRepo) GetUser(uid string) (user.User, error) {
 	switch uid {
 	case "User#123":
 		return user.User{
-			PrimaryCareReceivers: []string{"Receiver#123", "Receiver#123Error"},
+			PrimaryCareReceivers: []string{"Receiver#123", "Receiver#Error"},
 		}, nil
 	case "User#NotACareGiver":
 		return user.User{}, nil
@@ -80,7 +80,7 @@ func (me *MockEventRepo) AddEvent(e *event.Entry) error {
 	switch e.ReceiverID {
 	case "Receiver#123":
 		return nil
-	case "Receiver#123Error":
+	case "Receiver#Error":
 		return errors.New("error adding event")
 	}
 	return errors.New("unsupported mock")

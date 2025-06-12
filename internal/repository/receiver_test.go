@@ -78,12 +78,10 @@ func (m *MockReceiverDB) DeleteItem(ctx context.Context, params *dynamodb.Delete
 	return nil, errors.New("unsupported mock")
 }
 
-var (
-	appCfg           = appconfig.NewAppConfig()
-	testReceiverRepo = NewReceiverRespository(context.Background(), appCfg, &MockReceiverDB{})
-)
-
 func TestCreateReceiver(t *testing.T) {
+	appCfg := appconfig.NewAppConfig()
+	testReceiverRepo := NewReceiverRespository(context.Background(), appCfg, &MockReceiverDB{})
+
 	tests := map[string]struct {
 		receiver    receiver.Receiver
 		expectError bool
@@ -116,6 +114,9 @@ func TestCreateReceiver(t *testing.T) {
 }
 
 func TestGetReceiver(t *testing.T) {
+	appCfg := appconfig.NewAppConfig()
+	testReceiverRepo := NewReceiverRespository(context.Background(), appCfg, &MockReceiverDB{})
+
 	tests := map[string]struct {
 		receiverID       string
 		expectedReceiver receiver.Receiver

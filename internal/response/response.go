@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-const Success = "success"
+const Success = "Success"
 
 type ErrorResponse struct {
 	DeveloperText string `json:"developerText,omitempty"`
