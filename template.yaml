@@ -136,7 +136,7 @@ Resources:
             Method: GET
             RequestParameters:
               - method.request.querystring.userId:
-                Required: true
+                  Required: true
         GetReceiverEvent:
           Type: Api
           Properties:
@@ -145,9 +145,9 @@ Resources:
             Method: GET
             RequestParameters:
               - method.request.querystring.receiverId:
-                Required: true
+                  Required: true
               - method.request.querystring.userId:
-                Required: true
+                  Required: true
         DeleteReceiverEvent:
           Type: Api
           Properties:
@@ -156,9 +156,9 @@ Resources:
             Method: DELETE
             RequestParameters:
               - method.request.querystring.receiverId:
-                Required: true
+                  Required: true
               - method.request.querystring.userId:
-                Required: true
+                  Required: true
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           ENV: !Ref Env
