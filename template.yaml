@@ -135,7 +135,8 @@ Resources:
             Path: /events/{receiverId}
             Method: GET
             RequestParameters:
-              - method.request.querystring.userId: true
+              - method.request.querystring.userId:
+                Required: true
         GetReceiverEvent:
           Type: Api
           Properties:
@@ -143,8 +144,10 @@ Resources:
             Path: /event/{eventId}
             Method: GET
             RequestParameters:
-              - method.request.querystring.receiverId: true
-              - method.request.querystring.userId: true
+              - method.request.querystring.receiverId:
+                Required: true
+              - method.request.querystring.userId:
+                Required: true
         DeleteReceiverEvent:
           Type: Api
           Properties:
@@ -152,8 +155,10 @@ Resources:
             Path: /event/{eventId}
             Method: DELETE
             RequestParameters:
-              - method.request.querystring.receiverId: true
-              - method.request.querystring.userId: true
+              - method.request.querystring.receiverId:
+                Required: true
+              - method.request.querystring.userId:
+                Required: true
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           ENV: !Ref Env
