@@ -28,6 +28,7 @@ var (
 	EventLogKey      = "event name"
 	PathLogKey       = "path"
 	MethodLogKey     = "method"
+	ParamIDLogKey    = "param id"
 )
 
 func GetLogger(level string) (*zap.Logger, error) {

@@ -8,15 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/care-giver-app/care-giver-api/internal/appconfig"
+	"github.com/care-giver-app/care-giver-api/internal/event"
 	"github.com/care-giver-app/care-giver-api/internal/log"
-	"github.com/care-giver-app/care-giver-api/internal/receiver/events"
 	"go.uber.org/zap"
 )
 
 type EventRepositoryProvider interface {
-	AddEvent(e events.Event) error
-	GetEvents(rid string) ([]events.Event, error)
-	DeleteEvent(eid string) error
+	AddEvent(e *event.Entry) error
+	GetEvents(rid string) ([]event.Entry, error)
+	DeleteEvent(rid, eid string) error
 }
 
 type EventRepository struct {
@@ -35,7 +35,7 @@ func NewEventRespository(ctx context.Context, cfg *appconfig.AppConfig, client D
 	}
 }
 
-func (er *EventRepository) AddEvent(e events.Event) error {
+func (er *EventRepository) AddEvent(e *event.Entry) error {
 	er.logger.Info("adding receiver event to db")
 
 	er.logger.Info("marshalling receiver event struct")
@@ -57,7 +57,7 @@ func (er *EventRepository) AddEvent(e events.Event) error {
 	return nil
 }
 
-func (er *EventRepository) GetEvents(rid string) ([]events.Event, error) {
+func (er *EventRepository) GetEvents(rid string) ([]event.Entry, error) {
 	er.logger.Info("retrieving receiver events from db", zap.String(log.ReceiverIDLogKey, string(rid)))
 
 	keyCondition := "receiver_id = :rid"
@@ -76,24 +76,24 @@ func (er *EventRepository) GetEvents(rid string) ([]events.Event, error) {
 		return nil, err
 	}
 
-	var eventsList []events.Event
-	if len(result.Items) > 0 {
-		err = attributevalue.UnmarshalListOfMaps(result.Items, &eventsList)
-		if err != nil {
-			return nil, err
-		}
+	var eventsList []event.Entry
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &eventsList)
+	if err != nil {
+		er.logger.Error("error unmarshalling events list", zap.Error(err))
+		return nil, err
 	}
 
 	return eventsList, nil
 }
 
-func (er *EventRepository) DeleteEvent(eid string) error {
+func (er *EventRepository) DeleteEvent(rid, eid string) error {
 	er.logger.Info("deleting receiver event from db", zap.String(log.EventIDLogKey, eid))
 
 	_, err := er.Client.DeleteItem(er.Ctx, &dynamodb.DeleteItemInput{
 		TableName: aws.String(er.TableName),
 		Key: map[string]types.AttributeValue{
-			"event_id": &types.AttributeValueMemberS{Value: eid},
+			"receiver_id": &types.AttributeValueMemberS{Value: rid},
+			"event_id":    &types.AttributeValueMemberS{Value: eid},
 		},
 	})
 

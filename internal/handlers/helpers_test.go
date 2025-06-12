@@ -11,35 +11,6 @@ func ptr(v string) *string {
 	return &v
 }
 
-func TestValidateMethod(t *testing.T) {
-	tests := map[string]struct {
-		request     events.APIGatewayProxyRequest
-		method      string
-		expectError bool
-	}{
-		"Happy Path - Validated Method": {
-			request: events.APIGatewayProxyRequest{HTTPMethod: "POST"},
-			method:  "POST",
-		},
-		"Sad Path - Mismatch in Methods": {
-			request:     events.APIGatewayProxyRequest{HTTPMethod: "POST"},
-			method:      "GET",
-			expectError: true,
-		},
-	}
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			err := validateMethod(tc.request, tc.method)
-
-			if tc.expectError {
-				assert.NotNil(t, err)
-			} else {
-				assert.Nil(t, err)
-			}
-		})
-	}
-}
-
 func TestValidatePathParameters(t *testing.T) {
 	tests := map[string]struct {
 		request     events.APIGatewayProxyRequest

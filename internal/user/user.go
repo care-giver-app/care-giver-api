@@ -8,19 +8,19 @@ import (
 )
 
 const (
-	ParamId  = "userId"
+	ParamID  = "userId"
 	DBPrefix = "User"
 )
 
 type UserID string
 
 type User struct {
-	UserID                  UserID                `json:"userId" dynamodbav:"user_id"`
-	Email                   string                `json:"email" dynamodbav:"email"`
-	FirstName               string                `json:"firstName" dynamodbav:"first_name"`
-	LastName                string                `json:"lastName" dynamodbav:"last_name"`
-	PrimaryCareReceivers    []receiver.ReceiverID `json:"primaryCareReceivers" dynamodbav:"primary_care_receivers"`
-	AdditionalCareReceivers []receiver.ReceiverID `json:"additionalCareReceivers" dynamodbav:"additional_care_receivers"`
+	UserID                  string   `json:"userId" dynamodbav:"user_id"`
+	Email                   string   `json:"email" dynamodbav:"email"`
+	FirstName               string   `json:"firstName" dynamodbav:"first_name"`
+	LastName                string   `json:"lastName" dynamodbav:"last_name"`
+	PrimaryCareReceivers    []string `json:"primaryCareReceivers" dynamodbav:"primary_care_receivers"`
+	AdditionalCareReceivers []string `json:"additionalCareReceivers" dynamodbav:"additional_care_receivers"`
 }
 
 func NewUser(email string, firstName string, lastName string) (*User, error) {

@@ -128,18 +128,32 @@ Resources:
             RestApiId: !Ref CareGiverAPI
             Path: /event
             Method: POST
+        GetReceiverEvents:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /events/{receiverId}
+            Method: GET
+            RequestParameters:
+              - method.request.querystring.userId: true
         GetReceiverEvent:
           Type: Api
           Properties:
             RestApiId: !Ref CareGiverAPI
             Path: /event/{eventId}
             Method: GET
+            RequestParameters:
+              - method.request.querystring.receiverId: true
+              - method.request.querystring.userId: true
         DeleteReceiverEvent:
           Type: Api
           Properties:
             RestApiId: !Ref CareGiverAPI
             Path: /event/{eventId}
             Method: DELETE
+            RequestParameters:
+              - method.request.querystring.receiverId: true
+              - method.request.querystring.userId: true
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           ENV: !Ref Env
