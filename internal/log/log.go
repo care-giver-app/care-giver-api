@@ -24,9 +24,11 @@ var (
 	TableNameLogKey  = "table name"
 	UserIDLogKey     = "user id"
 	ReceiverIDLogKey = "receiver id"
+	EventIDLogKey    = "event id"
 	EventLogKey      = "event name"
 	PathLogKey       = "path"
 	MethodLogKey     = "method"
+	ParamIDLogKey    = "param id"
 )
 
 func GetLogger(level string) (*zap.Logger, error) {

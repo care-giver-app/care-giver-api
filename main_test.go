@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -15,7 +14,6 @@ import (
 type MockRegistry struct{}
 
 func (m *MockRegistry) GetHandler(request events.APIGatewayProxyRequest) (func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error), bool) {
-	fmt.Printf("Received request: %v\n", request)
 	if request.RequestContext.ResourcePath == "/good/path" {
 		return func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error) {
 			return events.APIGatewayProxyResponse{

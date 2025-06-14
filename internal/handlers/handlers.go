@@ -15,6 +15,7 @@ type HandlerParams struct {
 	Request      events.APIGatewayProxyRequest
 	UserRepo     repository.UserRepositoryProvider
 	ReceiverRepo repository.ReceiverRepositoryProvider
+	EventRepo    repository.EventRepositoryProvider
 }
 
 type Endpoint struct {
@@ -28,7 +29,9 @@ var handlersMap = map[Endpoint]func(ctx context.Context, params HandlerParams) (
 	Endpoint{"/user/primary-receiver", http.MethodPost}:    HandleUserPrimaryReceiver,
 	Endpoint{"/user/additional-receiver", http.MethodPost}: HandleUserAdditionalReceiver,
 	Endpoint{"/receiver/{receiverId}", http.MethodGet}:     HandleReceiver,
-	Endpoint{"/receiver/event", http.MethodPost}:           HandleReceiverEvent,
+	Endpoint{"/event", http.MethodPost}:                    HandleReceiverEvent,
+	Endpoint{"/event/{eventId}", http.MethodDelete}:        HandleDeleteReceiverEvent,
+	Endpoint{"/events/{receiverId}", http.MethodGet}:       HandleGetReceiverEvents,
 }
 
 type RegistryProvider interface {
@@ -40,13 +43,15 @@ type Registry struct {
 	AppCfg       *appconfig.AppConfig
 	UserRepo     repository.UserRepositoryProvider
 	ReceiverRepo repository.ReceiverRepositoryProvider
+	EventRepo    repository.EventRepositoryProvider
 }
 
-func NewRegistry(appCfg *appconfig.AppConfig, userRepo repository.UserRepositoryProvider, receiverRepo repository.ReceiverRepositoryProvider) *Registry {
+func NewRegistry(appCfg *appconfig.AppConfig, userRepo repository.UserRepositoryProvider, receiverRepo repository.ReceiverRepositoryProvider, eventRepo repository.EventRepositoryProvider) *Registry {
 	return &Registry{
 		AppCfg:       appCfg,
 		UserRepo:     userRepo,
 		ReceiverRepo: receiverRepo,
+		EventRepo:    eventRepo,
 	}
 }
 
@@ -66,6 +71,7 @@ func (r *Registry) RunHandler(ctx context.Context, handler func(ctx context.Cont
 		Request:      request,
 		UserRepo:     r.UserRepo,
 		ReceiverRepo: r.ReceiverRepo,
+		EventRepo:    r.EventRepo,
 	}
 
 	return handler(ctx, params)

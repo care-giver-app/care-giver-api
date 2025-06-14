@@ -13,7 +13,7 @@ const (
 	ReceiverTablePrefix = "receiver-table"
 	ReceiverIDPrefix    = "Receiver#"
 
-	localDockerEndpoint = "http://host.docker.internal:8000"
+	localDockerEndpoint = "http://dynamodb-local:8000"
 )
 
 func CreateClient(cfg *appconfig.AppConfig) *dynamodb.Client {

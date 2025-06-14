@@ -3,7 +3,6 @@ package user
 import (
 	"testing"
 
-	"github.com/care-giver-app/care-giver-api/internal/receiver"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,8 +17,8 @@ func TestNewUser(t *testing.T) {
 		FirstName:               testFirstName,
 		LastName:                testLastName,
 		Email:                   testEmail,
-		PrimaryCareReceivers:    []receiver.ReceiverID{},
-		AdditionalCareReceivers: []receiver.ReceiverID{},
+		PrimaryCareReceivers:    []string{},
+		AdditionalCareReceivers: []string{},
 	}
 
 	user, err := NewUser(testEmail, testFirstName, testLastName)
@@ -34,36 +33,36 @@ func TestIsACareGiver(t *testing.T) {
 	assert.Nil(t, err)
 
 	tests := map[string]struct {
-		primaryCareReceivers    []receiver.ReceiverID
-		additionalCareReceivers []receiver.ReceiverID
-		receiver                receiver.ReceiverID
+		primaryCareReceivers    []string
+		additionalCareReceivers []string
+		receiver                string
 		expected                bool
 	}{
 		"Happy Path - Receiver in Primary List": {
-			primaryCareReceivers: []receiver.ReceiverID{"Receiver#1"},
+			primaryCareReceivers: []string{"Receiver#1"},
 			receiver:             "Receiver#1",
 			expected:             true,
 		},
 		"Happy Path - Receiver in Additional List": {
-			additionalCareReceivers: []receiver.ReceiverID{"Receiver#1"},
+			additionalCareReceivers: []string{"Receiver#1"},
 			receiver:                "Receiver#1",
 			expected:                true,
 		},
 		"Happy Path - Receiver in Primary List With Additional Entries": {
-			primaryCareReceivers:    []receiver.ReceiverID{"Receiver#1", "Receiver#2"},
-			additionalCareReceivers: []receiver.ReceiverID{"Receiver#3", "Receiver#4"},
+			primaryCareReceivers:    []string{"Receiver#1", "Receiver#2"},
+			additionalCareReceivers: []string{"Receiver#3", "Receiver#4"},
 			receiver:                "Receiver#1",
 			expected:                true,
 		},
 		"Happy Path - Receiver in Additional List With Additional Entries": {
-			primaryCareReceivers:    []receiver.ReceiverID{"Receiver#1", "Receiver#2"},
-			additionalCareReceivers: []receiver.ReceiverID{"Receiver#3", "Receiver#4"},
+			primaryCareReceivers:    []string{"Receiver#1", "Receiver#2"},
+			additionalCareReceivers: []string{"Receiver#3", "Receiver#4"},
 			receiver:                "Receiver#3",
 			expected:                true,
 		},
 		"Sad Path - Receiver Not in Lists": {
-			primaryCareReceivers:    []receiver.ReceiverID{"Receiver#1", "Receiver#2"},
-			additionalCareReceivers: []receiver.ReceiverID{"Receiver#3", "Receiver#4"},
+			primaryCareReceivers:    []string{"Receiver#1", "Receiver#2"},
+			additionalCareReceivers: []string{"Receiver#3", "Receiver#4"},
 			receiver:                "Receiver#5",
 			expected:                false,
 		},
