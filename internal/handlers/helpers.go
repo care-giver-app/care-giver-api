@@ -17,13 +17,6 @@ const (
 	idSeparatorUrlEscaped = "%23"
 )
 
-func validateMethod(request events.APIGatewayProxyRequest, method string) error {
-	if request.HTTPMethod != method {
-		return fmt.Errorf("unsupported request method: expected %s", method)
-	}
-	return nil
-}
-
 func validatePathParameters(request events.APIGatewayProxyRequest, param string, idPrefix string) (string, error) {
 	switch len(request.PathParameters) {
 	case 0:
@@ -45,6 +38,21 @@ func validatePathParameters(request events.APIGatewayProxyRequest, param string,
 	default:
 		return "", errors.New("too many path parameters provided")
 	}
+}
+
+func validateQueryParameters(request events.APIGatewayProxyRequest, param string) (string, error) {
+	if len(request.QueryStringParameters) == 0 {
+		return "", errors.New("no query parameters provided")
+	}
+
+	if value, found := request.QueryStringParameters[param]; found {
+		if value == "" {
+			return "", errors.New("query parameter value is empty")
+		}
+		return value, nil
+	}
+
+	return "", fmt.Errorf("query parameter '%s' not found", param)
 }
 
 func readRequestBody(requestBody string, requestStruct interface{}) error {

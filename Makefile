@@ -17,7 +17,7 @@ invoke: sam-build
 	--event events/${EVENT}
 	
 start-api: sam-build
-	sam local start-api
+	sam local start-api --docker-network care-giver-infra_default
 
 deploy-dev: sam-build
 	sam deploy --config-env dev

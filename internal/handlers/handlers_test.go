@@ -90,7 +90,7 @@ func TestGetRegisteredHandler(t *testing.T) {
 		},
 	}
 
-	testHandlerRegistry := NewRegistry(nil, nil, nil)
+	testHandlerRegistry := NewRegistry(nil, nil, nil, nil)
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			handler, ok := testHandlerRegistry.GetHandler(tc.request)
