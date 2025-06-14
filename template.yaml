@@ -54,6 +54,7 @@ Resources:
           Resource: 
           - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/user-table-${Env}
           - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/receiver-table-${Env}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/event-table-${Env}
       Roles:
       - Ref: CareGiverAPIRole
     Metadata:
