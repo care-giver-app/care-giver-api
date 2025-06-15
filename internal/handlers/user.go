@@ -13,6 +13,13 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	createUser            = "create user"
+	getUser               = "get user"
+	addPrimaryReceiver    = "add primary receiver"
+	addAdditionalReceiver = "add additional receiver"
+)
+
 type CreateUserRequest struct {
 	Email     string `json:"email" validate:"required"`
 	FirstName string `json:"firstName" validate:"required"`
@@ -41,12 +48,12 @@ type AdditionalReceiverRequest struct {
 }
 
 func HandleCreateUser(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
-	params.AppCfg.Logger.Info("handling create user event")
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, createUser)
 
 	var createUserRequest CreateUserRequest
 	err := readRequestBody(params.Request.Body, &createUserRequest)
 	if err != nil {
-		params.AppCfg.Logger.Error("error reading request body", zap.Error(err))
+		params.AppCfg.Logger.Error(requestBodyError, zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
@@ -64,40 +71,40 @@ func HandleCreateUser(ctx context.Context, params HandlerParams) (events.APIGate
 	}
 
 	resp := CreateUserResponse{
-		UserID: string(user.UserID),
+		UserID: user.UserID,
 		Status: response.Success,
 	}
 
-	params.AppCfg.Logger.Info("processed create user event successfully")
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, createUser)
 	return response.FormatResponse(resp, http.StatusOK), nil
 }
 
 func HandleGetUser(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
-	params.AppCfg.Logger.Info("handling get user event")
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, getUser)
 
 	uid, err := validatePathParameters(params.Request, user.ParamID, user.DBPrefix)
 	if err != nil {
-		params.AppCfg.Logger.Error("error validating path parameters", zap.Error(err))
+		params.AppCfg.Logger.Error(pathParametersError, zap.String(log.ParamIDLogKey, user.ParamID), zap.Any(log.PathParametersLogKey, params.Request.PathParameters), zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
 	u, err := params.UserRepo.GetUser(uid)
 	if err != nil {
-		params.AppCfg.Logger.Error("error retrieving user from db", zap.Error(err))
+		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	params.AppCfg.Logger.Info("processed get user event successfully")
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, getUser)
 	return response.FormatResponse(u, http.StatusOK), nil
 }
 
 func HandleUserPrimaryReceiver(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
-	params.AppCfg.Logger.Info("handling add primary receiver event")
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, addPrimaryReceiver)
 
 	var primaryReceiverRequest PrimaryReceiverRequest
 	err := readRequestBody(params.Request.Body, &primaryReceiverRequest)
 	if err != nil {
-		params.AppCfg.Logger.Error("error reading request body", zap.Error(err))
+		params.AppCfg.Logger.Error(requestBodyError, zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
@@ -122,17 +129,17 @@ func HandleUserPrimaryReceiver(ctx context.Context, params HandlerParams) (event
 		Status:     response.Success,
 	}
 
-	params.AppCfg.Logger.Info("processed add primary receiver event successfully")
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, addPrimaryReceiver)
 	return response.FormatResponse(resp, http.StatusOK), nil
 }
 
 func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
-	params.AppCfg.Logger.Info("handling add additional receiver event")
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, addAdditionalReceiver)
 
 	var additionalReceiverRequest AdditionalReceiverRequest
 	err := readRequestBody(params.Request.Body, &additionalReceiverRequest)
 	if err != nil {
-		params.AppCfg.Logger.Error("error reading request body", zap.Error(err))
+		params.AppCfg.Logger.Error(requestBodyError, zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
@@ -142,7 +149,7 @@ func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (ev
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	params.AppCfg.Logger.Info("processed add additional receiver event successfully")
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, addAdditionalReceiver)
 	return response.FormatResponse(map[string]string{
 		"status": response.Success,
 	}, http.StatusOK), nil

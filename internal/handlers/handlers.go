@@ -10,6 +10,17 @@ import (
 	"github.com/care-giver-app/care-giver-api/internal/repository"
 )
 
+const (
+	handlerStart          = "handling %s"
+	handlerSuccessful     = "processed %s successfully"
+	requestBodyError      = "error reading request body"
+	pathParametersError   = "error validating path parameters"
+	queryParamsError      = "error validating query parameters"
+	userDatbaseError      = "error retrieving user from db"
+	receiverDatabaseError = "error retrieving receiver from db"
+	userNotCareGiverError = "user is not a caregiver for the receiver"
+)
+
 type HandlerParams struct {
 	AppCfg       *appconfig.AppConfig
 	Request      events.APIGatewayProxyRequest
@@ -23,7 +34,9 @@ type Endpoint struct {
 	Method string
 }
 
-var handlersMap = map[Endpoint]func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error){
+type HandlerFunc func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error)
+
+var handlersMap = map[Endpoint]HandlerFunc{
 	Endpoint{"/user", http.MethodPost}:                     HandleCreateUser,
 	Endpoint{"/user/{userId}", http.MethodGet}:             HandleGetUser,
 	Endpoint{"/user/primary-receiver", http.MethodPost}:    HandleUserPrimaryReceiver,
@@ -35,8 +48,8 @@ var handlersMap = map[Endpoint]func(ctx context.Context, params HandlerParams) (
 }
 
 type RegistryProvider interface {
-	GetHandler(request events.APIGatewayProxyRequest) (func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error), bool)
-	RunHandler(ctx context.Context, handler func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error), request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
+	GetHandler(request events.APIGatewayProxyRequest) (HandlerFunc, bool)
+	RunHandler(ctx context.Context, handler HandlerFunc, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 }
 
 type Registry struct {
@@ -55,7 +68,7 @@ func NewRegistry(appCfg *appconfig.AppConfig, userRepo repository.UserRepository
 	}
 }
 
-func (r *Registry) GetHandler(request events.APIGatewayProxyRequest) (func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error), bool) {
+func (r *Registry) GetHandler(request events.APIGatewayProxyRequest) (HandlerFunc, bool) {
 	endpoint := Endpoint{
 		Path:   removePathPrefix(request.RequestContext.ResourcePath),
 		Method: request.HTTPMethod,
@@ -65,7 +78,7 @@ func (r *Registry) GetHandler(request events.APIGatewayProxyRequest) (func(ctx c
 	return handler, exists
 }
 
-func (r *Registry) RunHandler(ctx context.Context, handler func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error), request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (r *Registry) RunHandler(ctx context.Context, handler HandlerFunc, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	params := HandlerParams{
 		AppCfg:       r.AppCfg,
 		Request:      request,

@@ -20,15 +20,17 @@ var (
 		PanicLevel: zap.PanicLevel,
 	}
 
-	EnvLogKey        = "env"
-	TableNameLogKey  = "table name"
-	UserIDLogKey     = "user id"
-	ReceiverIDLogKey = "receiver id"
-	EventIDLogKey    = "event id"
-	EventLogKey      = "event name"
-	PathLogKey       = "path"
-	MethodLogKey     = "method"
-	ParamIDLogKey    = "param id"
+	EnvLogKey             = "env"
+	TableNameLogKey       = "table name"
+	UserIDLogKey          = "user id"
+	ReceiverIDLogKey      = "receiver id"
+	EventIDLogKey         = "event id"
+	EventLogKey           = "event name"
+	PathLogKey            = "path"
+	QueryParametersLogKey = "query parameters"
+	PathParametersLogKey  = "path parameters"
+	MethodLogKey          = "method"
+	ParamIDLogKey         = "param id"
 )
 
 func GetLogger(level string) (*zap.Logger, error) {
