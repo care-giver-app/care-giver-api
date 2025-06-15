@@ -13,7 +13,7 @@ import (
 
 type MockRegistry struct{}
 
-func (m *MockRegistry) GetHandler(request events.APIGatewayProxyRequest) (func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error), bool) {
+func (m *MockRegistry) GetHandler(request events.APIGatewayProxyRequest) (handlers.HandlerFunc, bool) {
 	if request.RequestContext.ResourcePath == "/good/path" {
 		return func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error) {
 			return events.APIGatewayProxyResponse{
@@ -24,7 +24,7 @@ func (m *MockRegistry) GetHandler(request events.APIGatewayProxyRequest) (func(c
 	return nil, false
 }
 
-func (m *MockRegistry) RunHandler(ctx context.Context, handler func(ctx context.Context, params handlers.HandlerParams) (events.APIGatewayProxyResponse, error), request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (m *MockRegistry) RunHandler(ctx context.Context, handler handlers.HandlerFunc, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if handler != nil {
 		params := handlers.HandlerParams{
 			Request: request,

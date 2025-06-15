@@ -27,7 +27,7 @@ func TestGetRegisteredHandler(t *testing.T) {
 		}, nil
 	}
 
-	handlersMap = map[Endpoint]func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error){
+	handlersMap = map[Endpoint]HandlerFunc{
 		{Path: "/testPathOne", Method: "POST"}:   handlerOne,
 		{Path: "/test/path/two", Method: "GET"}:  handlerTwo,
 		{Path: "/test/path/two", Method: "POST"}: handlerThree,

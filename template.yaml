@@ -123,6 +123,9 @@ Resources:
             RestApiId: !Ref CareGiverAPI
             Path: /receiver/{receiverId}
             Method: GET
+            RequestParameters:
+              - method.request.querystring.userId:
+                  Required: true
         AddReceiverEvent:
           Type: Api
           Properties:

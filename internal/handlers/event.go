@@ -13,6 +13,12 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	addReceiverEvent    = "add receiver event"
+	deleteReceiverEvent = "delete receiver event"
+	getReceiverEvents   = "get receiver events"
+)
+
 type ReceiverEventRequest struct {
 	ReceiverID string            `json:"receiverId" validate:"required"`
 	UserID     string            `json:"userId" validate:"required"`
@@ -28,23 +34,24 @@ type ReceiverEventResponse struct {
 }
 
 func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, addReceiverEvent)
 	params.AppCfg.Logger.Info("handling add receiver event")
 
 	var rer ReceiverEventRequest
 	err := readRequestBody(params.Request.Body, &rer)
 	if err != nil {
-		params.AppCfg.Logger.Error("error reading request body", zap.Error(err))
+		params.AppCfg.Logger.Error(requestBodyError, zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
 	u, err := params.UserRepo.GetUser(rer.UserID)
 	if err != nil {
-		params.AppCfg.Logger.Error("error retrieving user from db", zap.Error(err))
+		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, rer.UserID), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
 	if !u.IsACareGiver(rer.ReceiverID) {
-		params.AppCfg.Logger.Sugar().Errorf("user %s is unauthorized to access receiver %s", u.UserID, rer.ReceiverID)
+		params.AppCfg.Logger.Sugar().Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, rer.ReceiverID), zap.String(log.UserIDLogKey, u.UserID))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
@@ -69,7 +76,7 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	params.AppCfg.Logger.Info("processed add receiver event successfully")
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, addReceiverEvent)
 	return response.FormatResponse(ReceiverEventResponse{
 		ReceiverID: rer.ReceiverID,
 		EventID:    newEvent.EventID,
@@ -78,34 +85,34 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 }
 
 func HandleDeleteReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
-	params.AppCfg.Logger.Info("handling delete receiver event")
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, deleteReceiverEvent)
 
 	eid, err := validatePathParameters(params.Request, event.ParamID, event.DBPrefix)
 	if err != nil {
-		params.AppCfg.Logger.Error("error validating path parameters", zap.String(log.ParamIDLogKey, event.ParamID), zap.Error(err))
+		params.AppCfg.Logger.Error(pathParametersError, zap.String(log.ParamIDLogKey, event.ParamID), zap.Any(log.PathParametersLogKey, params.Request.PathParameters), zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
 	rid, err := validateQueryParameters(params.Request, receiver.ParamID)
 	if err != nil {
-		params.AppCfg.Logger.Error("error validating query parameters", zap.String(log.ParamIDLogKey, receiver.ParamID), zap.Error(err))
+		params.AppCfg.Logger.Error(queryParamsError, zap.String(log.ParamIDLogKey, receiver.ParamID), zap.Any(log.QueryParametersLogKey, params.Request.QueryStringParameters), zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
 	uid, err := validateQueryParameters(params.Request, user.ParamID)
 	if err != nil {
-		params.AppCfg.Logger.Error("error validating query parameters", zap.String(log.ParamIDLogKey, user.ParamID), zap.Error(err))
+		params.AppCfg.Logger.Error(queryParamsError, zap.String(log.ParamIDLogKey, user.ParamID), zap.Any(log.QueryParametersLogKey, params.Request.QueryStringParameters), zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
 	u, err := params.UserRepo.GetUser(uid)
 	if err != nil {
-		params.AppCfg.Logger.Error("error retrieving user from db", zap.Error(err))
+		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
 	if !u.IsACareGiver(rid) {
-		params.AppCfg.Logger.Sugar().Errorf("user %s is unauthorized to delete event for receiver %s", u.UserID, rid)
+		params.AppCfg.Logger.Sugar().Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, rid), zap.String(log.UserIDLogKey, u.UserID))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
@@ -115,7 +122,7 @@ func HandleDeleteReceiverEvent(ctx context.Context, params HandlerParams) (awsev
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	params.AppCfg.Logger.Info("processed delete receiver event successfully")
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, deleteReceiverEvent)
 	return response.FormatResponse(
 		map[string]string{
 			"status": response.Success,
@@ -124,28 +131,28 @@ func HandleDeleteReceiverEvent(ctx context.Context, params HandlerParams) (awsev
 }
 
 func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
-	params.AppCfg.Logger.Info("handling get receiver events")
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, getReceiverEvents)
 
 	rid, err := validatePathParameters(params.Request, receiver.ParamID, receiver.DBPrefix)
 	if err != nil {
-		params.AppCfg.Logger.Error("error validating path parameters", zap.Error(err))
+		params.AppCfg.Logger.Error(pathParametersError, zap.String(log.ParamIDLogKey, receiver.ParamID), zap.Any(log.PathParametersLogKey, params.Request.PathParameters), zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
 	uid, err := validateQueryParameters(params.Request, user.ParamID)
 	if err != nil {
-		params.AppCfg.Logger.Error("error validating query parameters", zap.Error(err))
+		params.AppCfg.Logger.Error(queryParamsError, zap.String(log.ParamIDLogKey, user.ParamID), zap.Any(log.QueryParametersLogKey, params.Request.QueryStringParameters), zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
 
 	u, err := params.UserRepo.GetUser(uid)
 	if err != nil {
-		params.AppCfg.Logger.Error("error retrieving user from db", zap.Error(err))
+		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
 	if !u.IsACareGiver(rid) {
-		params.AppCfg.Logger.Sugar().Errorf("user %s is unauthorized to access events for receiver %s", u.UserID, rid)
+		params.AppCfg.Logger.Sugar().Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, rid), zap.String(log.UserIDLogKey, u.UserID))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
@@ -155,6 +162,6 @@ func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awseven
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	params.AppCfg.Logger.Info("processed get receiver events successfully")
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, getReceiverEvents)
 	return response.FormatResponse(eventsList, http.StatusOK), nil
 }
