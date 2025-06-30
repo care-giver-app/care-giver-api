@@ -28,7 +28,7 @@ func (mu *MockUserRepo) CreateUser(u user.User) error {
 
 func (mu *MockUserRepo) GetUser(uid string) (user.User, error) {
 	switch uid {
-	case "User#123":
+	case "User#123", "User#ListError":
 		return user.User{
 			PrimaryCareReceivers: []string{"Receiver#123", "Receiver#Error"},
 		}, nil
@@ -36,6 +36,23 @@ func (mu *MockUserRepo) GetUser(uid string) (user.User, error) {
 		return user.User{}, nil
 	case "User#Error":
 		return user.User{}, errors.New("error getting user from db")
+	}
+	return user.User{}, errors.New("unsupported mock")
+}
+
+func (mu *MockUserRepo) GetUserByEmail(email string) (user.User, error) {
+	switch email {
+	case "valid@example.com":
+		return user.User{
+			UserID:               "User#123",
+			PrimaryCareReceivers: []string{"Receiver#123", "Receiver#Error"},
+		}, nil
+	case "error@example.com":
+		return user.User{}, errors.New("error getting user from db")
+	case "listerror@example.com":
+		return user.User{
+			UserID: "User#ListError",
+		}, nil
 	}
 	return user.User{}, errors.New("unsupported mock")
 }

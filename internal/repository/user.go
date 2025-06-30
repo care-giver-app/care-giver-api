@@ -25,6 +25,7 @@ type DynamodbClientProvider interface {
 type UserRepositoryProvider interface {
 	CreateUser(u user.User) error
 	GetUser(uid string) (user.User, error)
+	GetUserByEmail(email string) (user.User, error)
 	UpdateReceiverList(uid string, rid string, listName string) error
 }
 
@@ -95,6 +96,38 @@ func (ur *UserRepository) GetUser(uid string) (user.User, error) {
 	}
 
 	return u, nil
+}
+
+func (ur *UserRepository) GetUserByEmail(email string) (user.User, error) {
+	ur.logger.Info("getting user from db")
+
+	keyCondition := "email = :email"
+	expressionAttributeValues := map[string]types.AttributeValue{
+		":email": &types.AttributeValueMemberS{Value: string(email)},
+	}
+
+	queryInput := &dynamodb.QueryInput{
+		TableName:                 aws.String(ur.TableName),
+		IndexName:                 aws.String("email"),
+		KeyConditionExpression:    aws.String(keyCondition),
+		ExpressionAttributeValues: expressionAttributeValues,
+	}
+
+	result, err := ur.Client.Query(ur.Ctx, queryInput)
+	if err != nil {
+		return user.User{}, err
+	}
+
+	if len(result.Items) == 1 {
+		var u user.User
+		err = attributevalue.UnmarshalMap(result.Items[0], &u)
+		if err != nil {
+			return user.User{}, err
+		}
+		return u, nil
+	}
+
+	return user.User{}, fmt.Errorf("user with email %s not found", email)
 }
 
 func (ur *UserRepository) UpdateReceiverList(uid string, rid string, listName string) error {
