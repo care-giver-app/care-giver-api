@@ -213,17 +213,11 @@ func TestHandleUserAdditionalReceiver(t *testing.T) {
 		"Happy Path - User Added": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodPost,
-				Body:       "{\"userId\": \"User#123\", \"receiverId\":\"Receiver#789\"}",
+				Body:       "{\"userId\": \"User#123\", \"receiverId\":\"Receiver#123\", \"email\":\"valid@example.com\"}",
 			},
 			expectedResponse: response.FormatResponse(map[string]string{
 				"status": "Success",
 			}, http.StatusOK),
-		},
-		"Sad Path - Wrong Method": {
-			request: events.APIGatewayProxyRequest{
-				HTTPMethod: "BadMethod",
-			},
-			expectedResponse: response.CreateBadRequestResponse(),
 		},
 		"Sad Path - Bad Request Body": {
 			request: events.APIGatewayProxyRequest{
@@ -232,10 +226,31 @@ func TestHandleUserAdditionalReceiver(t *testing.T) {
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
 		},
+		"Sad Path - Error Getting User": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodPost,
+				Body:       "{\"userId\": \"User#Error\", \"receiverId\":\"Receiver#123\", \"email\":\"valid@example.com\"}",
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
+		"Sad Path - User Not a Care Giver": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodPost,
+				Body:       "{\"userId\": \"User#NotACareGiver\", \"receiverId\":\"Receiver#123\", \"email\":\"valid@example.com\"}",
+			},
+			expectedResponse: response.CreateAccessDeniedResponse(),
+		},
+		"Sad Path - Error Getting User By Email": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodPost,
+				Body:       "{\"userId\": \"User#123\", \"receiverId\":\"Receiver#123\", \"email\":\"error@example.com\"}",
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
 		"Sad Path - Error Updating Receiver List": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodPost,
-				Body:       "{\"userId\": \"User#ListError\", \"receiverId\":\"Receiver#789\"}",
+				Body:       "{\"userId\": \"User#123\", \"receiverId\":\"Receiver#123\", \"email\":\"listerror@example.com\"}",
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},

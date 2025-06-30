@@ -18,6 +18,7 @@ The following endpoints are currently available
 Prerequisite: Make sure you have local dynamodb running with the following tables created:
 - `user-table-local`
 - `receiver-table-local`
+- `event-table-local`
 
 To start the api:
 ```sh

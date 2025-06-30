@@ -45,6 +45,7 @@ type PrimaryReceiverResponse struct {
 type AdditionalReceiverRequest struct {
 	UserID     string `json:"userId" validate:"required"`
 	ReceiverID string `json:"receiverId" validate:"required"`
+	Email      string `json:"email" validate:"required"`
 }
 
 func HandleCreateUser(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
@@ -143,7 +144,24 @@ func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (ev
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	err = params.UserRepo.UpdateReceiverList(additionalReceiverRequest.UserID, additionalReceiverRequest.ReceiverID, repository.AdditionalReceiverList)
+	u, err := params.UserRepo.GetUser(additionalReceiverRequest.UserID)
+	if err != nil {
+		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, additionalReceiverRequest.UserID), zap.Error(err))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+
+	if !u.IsACareGiver(additionalReceiverRequest.ReceiverID) {
+		params.AppCfg.Logger.Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, additionalReceiverRequest.ReceiverID), zap.String(log.UserIDLogKey, additionalReceiverRequest.UserID))
+		return response.CreateAccessDeniedResponse(), nil
+	}
+
+	additionalUser, err := params.UserRepo.GetUserByEmail(additionalReceiverRequest.Email)
+	if err != nil {
+		params.AppCfg.Logger.Error(userDatbaseError, zap.Error(err))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+
+	err = params.UserRepo.UpdateReceiverList(additionalUser.UserID, additionalReceiverRequest.ReceiverID, repository.AdditionalReceiverList)
 	if err != nil {
 		params.AppCfg.Logger.Error("error updating user additional receiver list", zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil

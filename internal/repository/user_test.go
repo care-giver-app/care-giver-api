@@ -73,6 +73,33 @@ func (m *MockUserRepository) UpdateItem(ctx context.Context, params *dynamodb.Up
 }
 
 func (m *MockUserRepository) Query(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+	if av, found := params.ExpressionAttributeValues[":email"]; found {
+		if email, ok := av.(*types.AttributeValueMemberS); ok {
+			switch email.Value {
+			case "valid@example.com":
+				return &dynamodb.QueryOutput{
+					Items: []map[string]types.AttributeValue{
+						{
+							"user_id":    &types.AttributeValueMemberS{Value: "User#123"},
+							"first_name": &types.AttributeValueMemberS{Value: "testFirstName"},
+							"last_name":  &types.AttributeValueMemberS{Value: "testLastName"},
+						},
+					},
+				}, nil
+			case "dberror@example.com":
+				return nil, errors.New("An error occured during Query")
+			case "unmarshalerror@example.com":
+				return &dynamodb.QueryOutput{
+					Items: []map[string]types.AttributeValue{
+						{
+							"user_id": &types.AttributeValueMemberBOOL{Value: false},
+						},
+					},
+				}, nil
+			}
+		}
+	}
+
 	return nil, errors.New("unsupported mock")
 }
 
@@ -155,6 +182,46 @@ func TestGetUser(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			user, err := testUserRepo.GetUser(tc.userID)
+
+			if tc.expectError {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, tc.expectedUser, user)
+			}
+		})
+	}
+}
+
+func TestGetUserByEmail(t *testing.T) {
+	appCfg := appconfig.NewAppConfig()
+	testUserRepo := NewUserRespository(context.Background(), appCfg, &MockUserRepository{})
+
+	tests := map[string]struct {
+		email        string
+		expectedUser user.User
+		expectError  bool
+	}{
+		"Happy Path - Got User": {
+			email: "valid@example.com",
+			expectedUser: user.User{
+				UserID:    "User#123",
+				FirstName: "testFirstName",
+				LastName:  "testLastName",
+			},
+		},
+		"Sad Path - Error Getting Item": {
+			email:       "dberror@example.com",
+			expectError: true,
+		},
+		"Sad Path - Error Unmarshalling Item": {
+			email:       "unmarshalerror@example.com",
+			expectError: true,
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			user, err := testUserRepo.GetUserByEmail(tc.email)
 
 			if tc.expectError {
 				assert.NotNil(t, err)
