@@ -47,7 +47,7 @@ func TestHandleReceiverEvent(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 		},
-		"Happy Path - Event Added - With Data": {
+		"Happy Path - Event Added - With Optional Fields": {
 			requestMethod: http.MethodPost,
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
@@ -59,6 +59,7 @@ func TestHandleReceiverEvent(t *testing.T) {
 						Value: "some value",
 					},
 				},
+				"note": "some note",
 			},
 			expectedResponseBody: map[string]interface{}{
 				"status":     "Success",

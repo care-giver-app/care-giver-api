@@ -11,6 +11,7 @@ func TestNewEntry(t *testing.T) {
 		eventType     string
 		timestamp     string
 		data          []DataPoint
+		note          string
 		expectedEntry Entry
 		expectErr     bool
 	}{
@@ -46,6 +47,14 @@ func TestNewEntry(t *testing.T) {
 				},
 			},
 		},
+		"Happy Path - With Note": {
+			eventType: "Weight",
+			note:      "some note",
+			expectedEntry: Entry{
+				Type: "Weight",
+				Note: "some note",
+			},
+		},
 		"Sad Path - Bad Event Type": {
 			eventType: "BadEventType",
 			expectErr: true,
@@ -68,6 +77,10 @@ func TestNewEntry(t *testing.T) {
 			if len(tc.data) > 0 {
 				opts = append(opts, WithData(tc.data))
 				tc.expectedEntry.Data = tc.data
+			}
+
+			if tc.note != "" {
+				opts = append(opts, WithNote(tc.note))
 			}
 
 			entry, err := NewEntry(testRID, testUID, tc.eventType, opts...)
