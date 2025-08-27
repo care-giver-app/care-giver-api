@@ -25,6 +25,7 @@ type Entry struct {
 	Timestamp  string      `json:"timestamp" dynamodbav:"timestamp"`
 	Type       string      `json:"type" dynamodbav:"type"`
 	Data       []DataPoint `json:"data,omitempty" dynamodbav:"data"`
+	Note       string      `json:"note,omitempty" dynamodbav:"note"`
 }
 
 type DataPoint struct {
@@ -43,6 +44,12 @@ func WithTimestamp(timestamp string) EntryOption {
 func WithData(data []DataPoint) EntryOption {
 	return func(e *Entry) {
 		e.Data = data
+	}
+}
+
+func WithNote(note string) EntryOption {
+	return func(e *Entry) {
+		e.Note = note
 	}
 }
 

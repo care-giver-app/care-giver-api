@@ -25,6 +25,7 @@ type ReceiverEventRequest struct {
 	Type       string            `json:"type" validate:"required"`
 	Timestamp  string            `json:"timestamp"`
 	Data       []event.DataPoint `json:"data"`
+	Note       string            `json:"note"`
 }
 
 type ReceiverEventResponse struct {
@@ -62,6 +63,10 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 
 	if len(rer.Data) > 0 {
 		opts = append(opts, event.WithData(rer.Data))
+	}
+
+	if rer.Note != "" {
+		opts = append(opts, event.WithNote(rer.Note))
 	}
 
 	newEvent, err := event.NewEntry(rer.ReceiverID, u.UserID, rer.Type, opts...)
