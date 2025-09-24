@@ -35,10 +35,9 @@ func (m *MockUserRepository) GetItem(ctx context.Context, params *dynamodb.GetIt
 			case "User#123":
 				return &dynamodb.GetItemOutput{
 					Item: map[string]types.AttributeValue{
-						"user_id":                &types.AttributeValueMemberS{Value: id.Value},
-						"first_name":             &types.AttributeValueMemberS{Value: "testFirstName"},
-						"last_name":              &types.AttributeValueMemberS{Value: "testLastName"},
-						"primary_care_receivers": &types.AttributeValueMemberL{Value: []types.AttributeValue{}},
+						"user_id":    &types.AttributeValueMemberS{Value: id.Value},
+						"first_name": &types.AttributeValueMemberS{Value: "testFirstName"},
+						"last_name":  &types.AttributeValueMemberS{Value: "testLastName"},
 					},
 				}, nil
 			case "Get Item Error":
@@ -46,10 +45,9 @@ func (m *MockUserRepository) GetItem(ctx context.Context, params *dynamodb.GetIt
 			case "Unmarshal Error":
 				return &dynamodb.GetItemOutput{
 					Item: map[string]types.AttributeValue{
-						"user_id":                &types.AttributeValueMemberS{Value: id.Value},
-						"first_name":             &types.AttributeValueMemberS{Value: "testFirstName"},
-						"last_name":              &types.AttributeValueMemberS{Value: "testLastName"},
-						"primary_care_receivers": &types.AttributeValueMemberBOOL{Value: false},
+						"user_id":    &types.AttributeValueMemberS{Value: id.Value},
+						"first_name": &types.AttributeValueMemberS{Value: "testFirstName"},
+						"last_name":  &types.AttributeValueMemberBOOL{Value: false},
 					},
 				}, nil
 			}
@@ -164,10 +162,9 @@ func TestGetUser(t *testing.T) {
 		"Happy Path - Got User": {
 			userID: "User#123",
 			expectedUser: user.User{
-				UserID:               "User#123",
-				FirstName:            "testFirstName",
-				LastName:             "testLastName",
-				PrimaryCareReceivers: []string{},
+				UserID:    "User#123",
+				FirstName: "testFirstName",
+				LastName:  "testLastName",
 			},
 		},
 		"Sad Path - Error Getting Item": {
@@ -228,35 +225,6 @@ func TestGetUserByEmail(t *testing.T) {
 			} else {
 				assert.Nil(t, err)
 				assert.Equal(t, tc.expectedUser, user)
-			}
-		})
-	}
-}
-
-func TestUpdateUser(t *testing.T) {
-	appCfg := appconfig.NewAppConfig()
-	testUserRepo := NewUserRespository(context.Background(), appCfg, &MockUserRepository{})
-
-	tests := map[string]struct {
-		userID      string
-		expectError bool
-	}{
-		"Happy Path - User Updated": {
-			userID: "User#123",
-		},
-		"Sad Path - Error Updating Item": {
-			userID:      "Update Item Error",
-			expectError: true,
-		},
-	}
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			err := testUserRepo.UpdateReceiverList(tc.userID, "", "")
-
-			if tc.expectError {
-				assert.NotNil(t, err)
-			} else {
-				assert.Nil(t, err)
 			}
 		})
 	}

@@ -83,6 +83,15 @@ func TestHandleReceiverEvent(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
+		"Sad Path - Error Getting Relationships": {
+			requestMethod: http.MethodPost,
+			requestBody: map[string]interface{}{
+				"receiverId": "Receiver#123",
+				"userId":     "User#RelationshipError",
+				"type":       "Shower",
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+		},
 		"Sad Path - User Is Not A Care Giver": {
 			requestMethod: http.MethodPost,
 			requestBody: map[string]interface{}{
@@ -131,11 +140,12 @@ func TestHandleReceiverEvent(t *testing.T) {
 			}
 
 			params := HandlerParams{
-				AppCfg:       appconfig.NewAppConfig(),
-				Request:      req,
-				UserRepo:     testUserRepo,
-				ReceiverRepo: testReceiverRepo,
-				EventRepo:    testEventRepo,
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          req,
+				UserRepo:         testUserRepo,
+				ReceiverRepo:     testReceiverRepo,
+				EventRepo:        testEventRepo,
+				RelationshipRepo: testRelationshipRepo,
 			}
 			resp, err := HandleReceiverEvent(context.Background(), params)
 			assert.Nil(t, err)
@@ -226,6 +236,19 @@ func TestHandleDeleteReceiverEvent(t *testing.T) {
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
+		"Sad Path - Error Getting Relationships": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodDelete,
+				PathParameters: map[string]string{
+					"eventId": "Event#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId":     "User#RelationshipError",
+					"receiverId": "Receiver#123",
+				},
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
 		"Sad Path - User Is Not A Care Giver": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodDelete,
@@ -257,11 +280,12 @@ func TestHandleDeleteReceiverEvent(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			params := HandlerParams{
-				AppCfg:       appconfig.NewAppConfig(),
-				Request:      tc.request,
-				UserRepo:     testUserRepo,
-				ReceiverRepo: testReceiverRepo,
-				EventRepo:    testEventRepo,
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          tc.request,
+				UserRepo:         testUserRepo,
+				ReceiverRepo:     testReceiverRepo,
+				EventRepo:        testEventRepo,
+				RelationshipRepo: testRelationshipRepo,
 			}
 
 			resp, err := HandleDeleteReceiverEvent(context.Background(), params)
@@ -278,7 +302,7 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 	}{
 		"Happy Path - Events Retrieved Successfully": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodDelete,
+				HTTPMethod: http.MethodGet,
 				PathParameters: map[string]string{
 					"receiverId": "Receiver#123",
 				},
@@ -297,7 +321,7 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 		},
 		"Sad Path - Bad Path Parameter - receiverId": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodDelete,
+				HTTPMethod: http.MethodGet,
 				PathParameters: map[string]string{
 					"notReceiverId": "Receiver#123",
 				},
@@ -309,7 +333,7 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 		},
 		"Sad Path - Bad Query Parameter - userId": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodDelete,
+				HTTPMethod: http.MethodGet,
 				PathParameters: map[string]string{
 					"receiverId": "Receiver#123",
 				},
@@ -319,7 +343,7 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 		},
 		"Sad Path - Error Retrieving User": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodDelete,
+				HTTPMethod: http.MethodGet,
 				PathParameters: map[string]string{
 					"receiverId": "Receiver#123",
 				},
@@ -329,9 +353,21 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
+		"Sad Path - Error Getting Relationships": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId": "User#RelationshipError",
+				},
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
 		"Sad Path - User Is Not A Care Giver": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodDelete,
+				HTTPMethod: http.MethodGet,
 				PathParameters: map[string]string{
 					"receiverId": "Receiver#123",
 				},
@@ -343,7 +379,7 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 		},
 		"Sad Path - Error Getting Event": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodDelete,
+				HTTPMethod: http.MethodGet,
 				PathParameters: map[string]string{
 					"receiverId": "Receiver#Error",
 				},
@@ -358,11 +394,12 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			params := HandlerParams{
-				AppCfg:       appconfig.NewAppConfig(),
-				Request:      tc.request,
-				UserRepo:     testUserRepo,
-				ReceiverRepo: testReceiverRepo,
-				EventRepo:    testEventRepo,
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          tc.request,
+				UserRepo:         testUserRepo,
+				ReceiverRepo:     testReceiverRepo,
+				EventRepo:        testEventRepo,
+				RelationshipRepo: testRelationshipRepo,
 			}
 
 			resp, err := HandleGetReceiverEvents(context.Background(), params)

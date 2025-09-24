@@ -14,12 +14,13 @@ const (
 )
 
 type AppConfig struct {
-	Env               string
-	AWSConfig         aws.Config
-	Logger            *zap.Logger
-	UserTableName     string
-	ReceiverTableName string
-	EventTableName    string
+	Env                   string
+	AWSConfig             aws.Config
+	Logger                *zap.Logger
+	UserTableName         string
+	ReceiverTableName     string
+	EventTableName        string
+	RelationshipTableName string
 }
 
 func NewAppConfig() *AppConfig {
@@ -38,6 +39,7 @@ func (a *AppConfig) ReadEnvVars() {
 	a.UserTableName = getEnvVarStringOrDefault("USER_TABLE_NAME", fmt.Sprintf("%s-%s", "user-table", LocalEnv))
 	a.ReceiverTableName = getEnvVarStringOrDefault("RECEIVER_TABLE_NAME", fmt.Sprintf("%s-%s", "receiver-table", LocalEnv))
 	a.EventTableName = getEnvVarStringOrDefault("EVENT_TABLE_NAME", fmt.Sprintf("%s-%s", "event-table", LocalEnv))
+	a.RelationshipTableName = getEnvVarStringOrDefault("RELATIONSHIP_TABLE_NAME", fmt.Sprintf("%s-%s", "relationship-table", LocalEnv))
 }
 
 func getEnvVarStringOrDefault(envVar string, defaultValue string) string {

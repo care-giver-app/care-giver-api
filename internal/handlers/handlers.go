@@ -11,22 +11,24 @@ import (
 )
 
 const (
-	handlerStart          = "handling %s"
-	handlerSuccessful     = "processed %s successfully"
-	requestBodyError      = "error reading request body"
-	pathParametersError   = "error validating path parameters"
-	queryParamsError      = "error validating query parameters"
-	userDatbaseError      = "error retrieving user from db"
-	receiverDatabaseError = "error retrieving receiver from db"
-	userNotCareGiverError = "user is not a caregiver for the receiver"
+	handlerStart              = "handling %s"
+	handlerSuccessful         = "processed %s successfully"
+	requestBodyError          = "error reading request body"
+	pathParametersError       = "error validating path parameters"
+	queryParamsError          = "error validating query parameters"
+	userDatbaseError          = "error retrieving user from db"
+	receiverDatabaseError     = "error retrieving receiver from db"
+	userNotCareGiverError     = "user is not a caregiver for the receiver"
+	relationshipDatabaseError = "error retrieving relationship from db"
 )
 
 type HandlerParams struct {
-	AppCfg       *appconfig.AppConfig
-	Request      events.APIGatewayProxyRequest
-	UserRepo     repository.UserRepositoryProvider
-	ReceiverRepo repository.ReceiverRepositoryProvider
-	EventRepo    repository.EventRepositoryProvider
+	AppCfg           *appconfig.AppConfig
+	Request          events.APIGatewayProxyRequest
+	UserRepo         repository.UserRepositoryProvider
+	ReceiverRepo     repository.ReceiverRepositoryProvider
+	EventRepo        repository.EventRepositoryProvider
+	RelationshipRepo repository.RelationshipRepositoryProvider
 }
 
 type Endpoint struct {
@@ -37,14 +39,15 @@ type Endpoint struct {
 type HandlerFunc func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error)
 
 var handlersMap = map[Endpoint]HandlerFunc{
-	Endpoint{"/user", http.MethodPost}:                     HandleCreateUser,
-	Endpoint{"/user/{userId}", http.MethodGet}:             HandleGetUser,
-	Endpoint{"/user/primary-receiver", http.MethodPost}:    HandleUserPrimaryReceiver,
-	Endpoint{"/user/additional-receiver", http.MethodPost}: HandleUserAdditionalReceiver,
-	Endpoint{"/receiver/{receiverId}", http.MethodGet}:     HandleReceiver,
-	Endpoint{"/event", http.MethodPost}:                    HandleReceiverEvent,
-	Endpoint{"/event/{eventId}", http.MethodDelete}:        HandleDeleteReceiverEvent,
-	Endpoint{"/events/{receiverId}", http.MethodGet}:       HandleGetReceiverEvents,
+	Endpoint{"/user", http.MethodPost}:                       HandleCreateUser,
+	Endpoint{"/user/{userId}", http.MethodGet}:               HandleGetUser,
+	Endpoint{"/user/primary-receiver", http.MethodPost}:      HandleUserPrimaryReceiver,
+	Endpoint{"/user/additional-receiver", http.MethodPost}:   HandleUserAdditionalReceiver,
+	Endpoint{"/user/relationships/{userId}", http.MethodGet}: HandleGetUserRelationships,
+	Endpoint{"/receiver/{receiverId}", http.MethodGet}:       HandleReceiver,
+	Endpoint{"/event", http.MethodPost}:                      HandleReceiverEvent,
+	Endpoint{"/event/{eventId}", http.MethodDelete}:          HandleDeleteReceiverEvent,
+	Endpoint{"/events/{receiverId}", http.MethodGet}:         HandleGetReceiverEvents,
 }
 
 type RegistryProvider interface {
@@ -53,18 +56,20 @@ type RegistryProvider interface {
 }
 
 type Registry struct {
-	AppCfg       *appconfig.AppConfig
-	UserRepo     repository.UserRepositoryProvider
-	ReceiverRepo repository.ReceiverRepositoryProvider
-	EventRepo    repository.EventRepositoryProvider
+	AppCfg           *appconfig.AppConfig
+	UserRepo         repository.UserRepositoryProvider
+	ReceiverRepo     repository.ReceiverRepositoryProvider
+	EventRepo        repository.EventRepositoryProvider
+	RelationshipRepo repository.RelationshipRepositoryProvider
 }
 
-func NewRegistry(appCfg *appconfig.AppConfig, userRepo repository.UserRepositoryProvider, receiverRepo repository.ReceiverRepositoryProvider, eventRepo repository.EventRepositoryProvider) *Registry {
+func NewRegistry(appCfg *appconfig.AppConfig, userRepo repository.UserRepositoryProvider, receiverRepo repository.ReceiverRepositoryProvider, eventRepo repository.EventRepositoryProvider, relationshipRepo repository.RelationshipRepositoryProvider) *Registry {
 	return &Registry{
-		AppCfg:       appCfg,
-		UserRepo:     userRepo,
-		ReceiverRepo: receiverRepo,
-		EventRepo:    eventRepo,
+		AppCfg:           appCfg,
+		UserRepo:         userRepo,
+		ReceiverRepo:     receiverRepo,
+		EventRepo:        eventRepo,
+		RelationshipRepo: relationshipRepo,
 	}
 }
 
@@ -80,11 +85,12 @@ func (r *Registry) GetHandler(request events.APIGatewayProxyRequest) (HandlerFun
 
 func (r *Registry) RunHandler(ctx context.Context, handler HandlerFunc, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	params := HandlerParams{
-		AppCfg:       r.AppCfg,
-		Request:      request,
-		UserRepo:     r.UserRepo,
-		ReceiverRepo: r.ReceiverRepo,
-		EventRepo:    r.EventRepo,
+		AppCfg:           r.AppCfg,
+		Request:          request,
+		UserRepo:         r.UserRepo,
+		ReceiverRepo:     r.ReceiverRepo,
+		EventRepo:        r.EventRepo,
+		RelationshipRepo: r.RelationshipRepo,
 	}
 
 	return handler(ctx, params)

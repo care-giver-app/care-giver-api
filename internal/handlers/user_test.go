@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/care-giver-app/care-giver-api/internal/appconfig"
+	"github.com/care-giver-app/care-giver-api/internal/relationship"
 	"github.com/care-giver-app/care-giver-api/internal/response"
 	"github.com/care-giver-app/care-giver-api/internal/user"
 	"github.com/stretchr/testify/assert"
@@ -90,7 +91,7 @@ func TestHandleGetUser(t *testing.T) {
 				},
 			},
 			expectedResponse: response.FormatResponse(user.User{
-				PrimaryCareReceivers: []string{"Receiver#123", "Receiver#Error"},
+				UserID: "User#123",
 			}, http.StatusOK),
 		},
 		"Sad Path - Wrong Method": {
@@ -167,10 +168,10 @@ func TestHandleUserPrimaryReceiver(t *testing.T) {
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
-		"Sad Path - Error Updating Receiver List": {
+		"Sad Path - Error Updating Relationship": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodPost,
-				Body:       "{\"userId\": \"User#ListError\", \"firstName\":\"Good\", \"lastName\":\"Daniel\"}",
+				Body:       "{\"userId\": \"User#RelationshipError\", \"firstName\":\"Good\", \"lastName\":\"Daniel\"}",
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
@@ -178,10 +179,11 @@ func TestHandleUserPrimaryReceiver(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			params := HandlerParams{
-				AppCfg:       appconfig.NewAppConfig(),
-				Request:      tc.request,
-				UserRepo:     testUserRepo,
-				ReceiverRepo: testReceiverRepo,
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          tc.request,
+				UserRepo:         testUserRepo,
+				ReceiverRepo:     testReceiverRepo,
+				RelationshipRepo: testRelationshipRepo,
 			}
 			resp, err := HandleUserPrimaryReceiver(context.Background(), params)
 
@@ -250,7 +252,7 @@ func TestHandleUserAdditionalReceiver(t *testing.T) {
 		"Sad Path - Error Updating Receiver List": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodPost,
-				Body:       "{\"userId\": \"User#123\", \"receiverId\":\"Receiver#123\", \"email\":\"listerror@example.com\"}",
+				Body:       "{\"userId\": \"User#123\", \"receiverId\":\"Receiver#123\", \"email\":\"relationshiperror@example.com\"}",
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
@@ -258,12 +260,77 @@ func TestHandleUserAdditionalReceiver(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			params := HandlerParams{
-				AppCfg:       appconfig.NewAppConfig(),
-				Request:      tc.request,
-				UserRepo:     testUserRepo,
-				ReceiverRepo: testReceiverRepo,
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          tc.request,
+				UserRepo:         testUserRepo,
+				ReceiverRepo:     testReceiverRepo,
+				RelationshipRepo: testRelationshipRepo,
 			}
 			resp, err := HandleUserAdditionalReceiver(context.Background(), params)
+
+			assert.Nil(t, err)
+			assert.Equal(t, tc.expectedResponse, resp)
+		})
+	}
+}
+
+func TestHandlerGetUserRelationships(t *testing.T) {
+	tests := map[string]struct {
+		request          events.APIGatewayProxyRequest
+		expectedResponse events.APIGatewayProxyResponse
+	}{
+		"Happy Path - Relationships Retrieved": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"userId": "User#123",
+				},
+			},
+			expectedResponse: response.FormatResponse(GetUserRelationshipsResponse{
+				Relationships: []relationship.Relationship{
+					{
+						UserID:             "User#123",
+						ReceiverID:         "Receiver#123",
+						PrimaryCareGiver:   true,
+						EmailNotifications: true,
+					},
+					{
+						UserID:             "User#123",
+						ReceiverID:         "Receiver#Error",
+						PrimaryCareGiver:   false,
+						EmailNotifications: false,
+					},
+				},
+				Status: response.Success,
+			}, http.StatusOK),
+		},
+		"Sad Path - Missing Path Parameters": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod:     http.MethodGet,
+				PathParameters: map[string]string{},
+			},
+			expectedResponse: response.CreateBadRequestResponse(),
+		},
+		"Sad Path - Error Getting Relationships From DB": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"userId": "User#Error",
+				},
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			params := HandlerParams{
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          tc.request,
+				UserRepo:         testUserRepo,
+				ReceiverRepo:     testReceiverRepo,
+				RelationshipRepo: testRelationshipRepo,
+			}
+			resp, err := HandleGetUserRelationships(context.Background(), params)
 
 			assert.Nil(t, err)
 			assert.Equal(t, tc.expectedResponse, resp)

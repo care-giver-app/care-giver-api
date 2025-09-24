@@ -8,6 +8,7 @@ import (
 	"github.com/care-giver-app/care-giver-api/internal/event"
 	"github.com/care-giver-app/care-giver-api/internal/log"
 	"github.com/care-giver-app/care-giver-api/internal/receiver"
+	"github.com/care-giver-app/care-giver-api/internal/relationship"
 	"github.com/care-giver-app/care-giver-api/internal/response"
 	"github.com/care-giver-app/care-giver-api/internal/user"
 	"go.uber.org/zap"
@@ -51,7 +52,13 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	if !u.IsACareGiver(rer.ReceiverID) {
+	relationships, err := params.RelationshipRepo.GetRelationshipsByUser(u.UserID)
+	if err != nil {
+		params.AppCfg.Logger.Error(relationshipDatabaseError, zap.Error(err))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+
+	if !relationship.IsACareGiver(u.UserID, rer.ReceiverID, relationships) {
 		params.AppCfg.Logger.Sugar().Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, rer.ReceiverID), zap.String(log.UserIDLogKey, u.UserID))
 		return response.CreateAccessDeniedResponse(), nil
 	}
@@ -116,7 +123,13 @@ func HandleDeleteReceiverEvent(ctx context.Context, params HandlerParams) (awsev
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	if !u.IsACareGiver(rid) {
+	relationships, err := params.RelationshipRepo.GetRelationshipsByUser(uid)
+	if err != nil {
+		params.AppCfg.Logger.Error(relationshipDatabaseError, zap.Error(err))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+
+	if !relationship.IsACareGiver(uid, rid, relationships) {
 		params.AppCfg.Logger.Sugar().Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, rid), zap.String(log.UserIDLogKey, u.UserID))
 		return response.CreateAccessDeniedResponse(), nil
 	}
@@ -156,7 +169,13 @@ func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awseven
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	if !u.IsACareGiver(rid) {
+	relationships, err := params.RelationshipRepo.GetRelationshipsByUser(uid)
+	if err != nil {
+		params.AppCfg.Logger.Error(relationshipDatabaseError, zap.Error(err))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+
+	if !relationship.IsACareGiver(uid, rid, relationships) {
 		params.AppCfg.Logger.Sugar().Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, rid), zap.String(log.UserIDLogKey, u.UserID))
 		return response.CreateAccessDeniedResponse(), nil
 	}

@@ -21,12 +21,13 @@ const (
 )
 
 var (
-	dynamoClient    *dynamodb.Client
-	appCfg          *appconfig.AppConfig
-	userRepo        *repository.UserRepository
-	receiverRepo    *repository.ReceiverRepository
-	eventRepo       *repository.EventRepository
-	handlerRegistry handlers.RegistryProvider
+	dynamoClient     *dynamodb.Client
+	appCfg           *appconfig.AppConfig
+	userRepo         *repository.UserRepository
+	receiverRepo     *repository.ReceiverRepository
+	eventRepo        *repository.EventRepository
+	relationshipRepo *repository.RelationshipRepository
+	handlerRegistry  handlers.RegistryProvider
 )
 
 func init() {
@@ -51,8 +52,11 @@ func init() {
 	appCfg.Logger.Info("initializing event repository")
 	eventRepo = repository.NewEventRespository(context.TODO(), appCfg, dynamoClient)
 
+	appCfg.Logger.Info("initializing relationship repository")
+	relationshipRepo = repository.NewRelationshipRepository(context.TODO(), appCfg, dynamoClient)
+
 	appCfg.Logger.Info("initializing handler registry")
-	handlerRegistry = handlers.NewRegistry(appCfg, userRepo, receiverRepo, eventRepo)
+	handlerRegistry = handlers.NewRegistry(appCfg, userRepo, receiverRepo, eventRepo, relationshipRepo)
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
