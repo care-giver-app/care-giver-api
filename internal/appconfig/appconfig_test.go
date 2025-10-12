@@ -19,4 +19,6 @@ func TestReadEnvVars(t *testing.T) {
 	assert.Equal(t, "TEST", ac.Env)
 	assert.Equal(t, "user-table-test", ac.UserTableName)
 	assert.Equal(t, "receiver-table-local", ac.ReceiverTableName)
+	assert.Equal(t, "event-table-local", ac.EventTableName)
+	assert.Equal(t, "relationship-table-local", ac.RelationshipTableName)
 }

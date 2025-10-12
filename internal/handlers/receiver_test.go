@@ -92,10 +92,11 @@ func TestHandleReceiver(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			params := HandlerParams{
-				AppCfg:       appconfig.NewAppConfig(),
-				Request:      tc.request,
-				UserRepo:     testUserRepo,
-				ReceiverRepo: testReceiverRepo,
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          tc.request,
+				UserRepo:         testUserRepo,
+				ReceiverRepo:     testReceiverRepo,
+				RelationshipRepo: testRelationshipRepo,
 			}
 			resp, err := HandleReceiver(context.Background(), params)
 

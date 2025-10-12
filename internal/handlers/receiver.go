@@ -7,6 +7,7 @@ import (
 	awsevents "github.com/aws/aws-lambda-go/events"
 	"github.com/care-giver-app/care-giver-api/internal/log"
 	"github.com/care-giver-app/care-giver-api/internal/receiver"
+	"github.com/care-giver-app/care-giver-api/internal/relationship"
 	"github.com/care-giver-app/care-giver-api/internal/response"
 	"github.com/care-giver-app/care-giver-api/internal/user"
 	"go.uber.org/zap"
@@ -31,13 +32,13 @@ func HandleReceiver(ctx context.Context, params HandlerParams) (awsevents.APIGat
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	u, err := params.UserRepo.GetUser(uid)
+	relationships, err := params.RelationshipRepo.GetRelationshipsByUser(uid)
 	if err != nil {
-		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
+		params.AppCfg.Logger.Error(relationshipDatabaseError, zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	if !u.IsACareGiver(rid) {
+	if !relationship.IsACareGiver(uid, rid, relationships) {
 		params.AppCfg.Logger.Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, rid), zap.String(log.UserIDLogKey, uid))
 		return response.CreateAccessDeniedResponse(), nil
 	}

@@ -26,7 +26,6 @@ type UserRepositoryProvider interface {
 	CreateUser(u user.User) error
 	GetUser(uid string) (user.User, error)
 	GetUserByEmail(email string) (user.User, error)
-	UpdateReceiverList(uid string, rid string, listName string) error
 }
 
 const (
@@ -35,8 +34,7 @@ const (
 )
 
 var (
-	updateReceiverListExpression = "SET #rl = list_append(#rl, :val)"
-	userID                       = "user_id"
+	userID = "user_id"
 )
 
 type UserRepository struct {
@@ -128,30 +126,4 @@ func (ur *UserRepository) GetUserByEmail(email string) (user.User, error) {
 	}
 
 	return user.User{}, fmt.Errorf("user with email %s not found", email)
-}
-
-func (ur *UserRepository) UpdateReceiverList(uid string, rid string, listName string) error {
-	ur.logger.Info("updating user in db", zap.Any(log.UserIDLogKey, uid))
-
-	ur.logger.Info("updating item in db")
-	_, err := ur.Client.UpdateItem(ur.Ctx, &dynamodb.UpdateItemInput{
-		TableName: aws.String(ur.TableName),
-		Key: map[string]types.AttributeValue{
-			userID: &types.AttributeValueMemberS{Value: string(uid)},
-		},
-		UpdateExpression: &updateReceiverListExpression,
-		ExpressionAttributeNames: map[string]string{
-			"#rl": listName,
-		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":val": &types.AttributeValueMemberL{Value: []types.AttributeValue{&types.AttributeValueMemberS{Value: rid}}},
-		},
-		ConditionExpression: aws.String(fmt.Sprintf("attribute_exists(%s)", userID)),
-	})
-	if err != nil {
-		return err
-	}
-	ur.logger.Info("successfully updated item")
-
-	return nil
 }

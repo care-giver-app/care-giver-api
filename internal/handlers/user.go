@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/care-giver-app/care-giver-api/internal/log"
 	"github.com/care-giver-app/care-giver-api/internal/receiver"
-	"github.com/care-giver-app/care-giver-api/internal/repository"
+	"github.com/care-giver-app/care-giver-api/internal/relationship"
 	"github.com/care-giver-app/care-giver-api/internal/response"
 	"github.com/care-giver-app/care-giver-api/internal/user"
 	"go.uber.org/zap"
@@ -46,6 +46,11 @@ type AdditionalReceiverRequest struct {
 	UserID     string `json:"userId" validate:"required"`
 	ReceiverID string `json:"receiverId" validate:"required"`
 	Email      string `json:"email" validate:"required"`
+}
+
+type GetUserRelationshipsResponse struct {
+	Relationships []relationship.Relationship `json:"relationships"`
+	Status        string                      `json:"status"`
 }
 
 func HandleCreateUser(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
@@ -118,9 +123,10 @@ func HandleUserPrimaryReceiver(ctx context.Context, params HandlerParams) (event
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	err = params.UserRepo.UpdateReceiverList(primaryReceiverRequest.UserID, receiver.ReceiverID, repository.PrimaryReceiverList)
+	newRelationship := relationship.NewRelationship(primaryReceiverRequest.UserID, receiver.ReceiverID, true, false)
+	err = params.RelationshipRepo.AddRelationship(newRelationship)
 	if err != nil {
-		params.AppCfg.Logger.Error("error updating user primary receiver list", zap.Error(err))
+		params.AppCfg.Logger.Error("error creating relationship in db", zap.Error(err))
 		// TODO: delete newly created receiver item
 		return response.CreateInternalServerErrorResponse(), nil
 	}
@@ -144,13 +150,13 @@ func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (ev
 		return response.CreateBadRequestResponse(), nil
 	}
 
-	u, err := params.UserRepo.GetUser(additionalReceiverRequest.UserID)
+	relationships, err := params.RelationshipRepo.GetRelationshipsByUser(additionalReceiverRequest.UserID)
 	if err != nil {
-		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, additionalReceiverRequest.UserID), zap.Error(err))
+		params.AppCfg.Logger.Error(relationshipDatabaseError, zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	if !u.IsACareGiver(additionalReceiverRequest.ReceiverID) {
+	if !relationship.IsAPrimaryCareGiver(additionalReceiverRequest.UserID, additionalReceiverRequest.ReceiverID, relationships) {
 		params.AppCfg.Logger.Error(userNotCareGiverError, zap.String(log.ReceiverIDLogKey, additionalReceiverRequest.ReceiverID), zap.String(log.UserIDLogKey, additionalReceiverRequest.UserID))
 		return response.CreateAccessDeniedResponse(), nil
 	}
@@ -161,9 +167,10 @@ func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (ev
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
-	err = params.UserRepo.UpdateReceiverList(additionalUser.UserID, additionalReceiverRequest.ReceiverID, repository.AdditionalReceiverList)
+	newRelationship := relationship.NewRelationship(additionalUser.UserID, additionalReceiverRequest.ReceiverID, false, false)
+	err = params.RelationshipRepo.AddRelationship(newRelationship)
 	if err != nil {
-		params.AppCfg.Logger.Error("error updating user additional receiver list", zap.Error(err))
+		params.AppCfg.Logger.Error("error creating relationship in db", zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
@@ -171,4 +178,28 @@ func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (ev
 	return response.FormatResponse(map[string]string{
 		"status": response.Success,
 	}, http.StatusOK), nil
+}
+
+func HandleGetUserRelationships(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, "get user relationships")
+
+	uid, err := validatePathParameters(params.Request, user.ParamID, user.DBPrefix)
+	if err != nil {
+		params.AppCfg.Logger.Error(pathParametersError, zap.String(log.ParamIDLogKey, user.ParamID), zap.Any(log.PathParametersLogKey, params.Request.PathParameters), zap.Error(err))
+		return response.CreateBadRequestResponse(), nil
+	}
+
+	relationships, err := params.RelationshipRepo.GetRelationshipsByUser(uid)
+	if err != nil {
+		params.AppCfg.Logger.Error(relationshipDatabaseError, zap.Error(err))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+
+	resp := GetUserRelationshipsResponse{
+		Relationships: relationships,
+		Status:        response.Success,
+	}
+
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, "get user relationships")
+	return response.FormatResponse(resp, http.StatusOK), nil
 }

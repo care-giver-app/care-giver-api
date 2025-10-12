@@ -56,6 +56,8 @@ Resources:
           - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/user-table-${Env}/index/*
           - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/receiver-table-${Env}
           - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/event-table-${Env}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/relationship-table-${Env}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/relationship-table-${Env}/index/*
       Roles:
       - Ref: CareGiverAPIRole
     Metadata:
@@ -118,6 +120,12 @@ Resources:
             RestApiId: !Ref CareGiverAPI
             Path: /user/additional-receiver
             Method: POST
+        GetUserRelationships:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /user/relationships/{userId}
+            Method: GET
         GetReceiver:
           Type: Api
           Properties:
@@ -170,6 +178,7 @@ Resources:
           USER_TABLE_NAME: !Sub user-table-${Env}
           RECEIVER_TABLE_NAME: !Sub receiver-table-${Env}
           EVENT_TABLE_NAME: !Sub event-table-${Env}
+          RELATIONSHIP_TABLE_NAME: !Sub relationship-table-${Env}
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

@@ -5,13 +5,15 @@ import (
 
 	"github.com/care-giver-app/care-giver-api/internal/event"
 	"github.com/care-giver-app/care-giver-api/internal/receiver"
+	"github.com/care-giver-app/care-giver-api/internal/relationship"
 	"github.com/care-giver-app/care-giver-api/internal/user"
 )
 
 var (
-	testUserRepo     = &MockUserRepo{}
-	testReceiverRepo = &MockReceiverRepo{}
-	testEventRepo    = &MockEventRepo{}
+	testUserRepo         = &MockUserRepo{}
+	testReceiverRepo     = &MockReceiverRepo{}
+	testEventRepo        = &MockEventRepo{}
+	testRelationshipRepo = &MockRelationshipRepo{}
 )
 
 type MockUserRepo struct{}
@@ -28,12 +30,18 @@ func (mu *MockUserRepo) CreateUser(u user.User) error {
 
 func (mu *MockUserRepo) GetUser(uid string) (user.User, error) {
 	switch uid {
-	case "User#123", "User#ListError":
+	case "User#123":
 		return user.User{
-			PrimaryCareReceivers: []string{"Receiver#123", "Receiver#Error"},
+			UserID: "User#123",
+		}, nil
+	case "User#RelationshipError":
+		return user.User{
+			UserID: "User#RelationshipError",
 		}, nil
 	case "User#NotACareGiver":
-		return user.User{}, nil
+		return user.User{
+			UserID: "User#NotACareGiver",
+		}, nil
 	case "User#Error":
 		return user.User{}, errors.New("error getting user from db")
 	}
@@ -44,14 +52,13 @@ func (mu *MockUserRepo) GetUserByEmail(email string) (user.User, error) {
 	switch email {
 	case "valid@example.com":
 		return user.User{
-			UserID:               "User#123",
-			PrimaryCareReceivers: []string{"Receiver#123", "Receiver#Error"},
+			UserID: "User#123",
 		}, nil
 	case "error@example.com":
 		return user.User{}, errors.New("error getting user from db")
-	case "listerror@example.com":
+	case "relationshiperror@example.com":
 		return user.User{
-			UserID: "User#ListError",
+			UserID: "User#RelationshipError",
 		}, nil
 	}
 	return user.User{}, errors.New("unsupported mock")
@@ -61,8 +68,8 @@ func (mu *MockUserRepo) UpdateReceiverList(uid string, rid string, listName stri
 	switch uid {
 	case "User#123":
 		return nil
-	case "User#ListError":
-		return errors.New("error updating receiver list")
+	case "User#RelationshipError":
+		return errors.New("error updating relationship")
 	}
 	return errors.New("unsupported mock")
 }
@@ -128,4 +135,58 @@ func (me *MockEventRepo) DeleteEvent(rid, eid string) error {
 		return errors.New("error deleting event")
 	}
 	return errors.New("unsupported mock")
+}
+
+type MockRelationshipRepo struct{}
+
+func (mr *MockRelationshipRepo) GetRelationshipsByUser(uid string) ([]relationship.Relationship, error) {
+	switch uid {
+	case "User#123":
+		return []relationship.Relationship{
+			{
+				UserID:             "User#123",
+				ReceiverID:         "Receiver#123",
+				PrimaryCareGiver:   true,
+				EmailNotifications: true,
+			},
+			{
+				UserID:             "User#123",
+				ReceiverID:         "Receiver#Error",
+				PrimaryCareGiver:   false,
+				EmailNotifications: false,
+			},
+		}, nil
+	case "User#NotACareGiver":
+		return []relationship.Relationship{}, nil
+	case "User#NotAPrimaryCareGiver":
+		return []relationship.Relationship{
+			{
+				UserID:             "User#NotAPrimaryCareGiver",
+				ReceiverID:         "Receiver#123",
+				PrimaryCareGiver:   false,
+				EmailNotifications: true,
+			},
+		}, nil
+	case "User#RelationshipError":
+		return nil, errors.New("error retrieving relationships from db")
+	}
+	return nil, errors.New("unsupported mock")
+}
+
+func (mr *MockRelationshipRepo) AddRelationship(r *relationship.Relationship) error {
+	switch r.UserID {
+	case "User#123":
+		return nil
+	case "User#RelationshipError":
+		return errors.New("error adding relationship")
+	}
+	return nil
+}
+
+func (mr *MockRelationshipRepo) DeleteRelationship(uid, rid string) error {
+	return nil
+}
+
+func (mr *MockRelationshipRepo) GetRelationship(userID string, receiverID string) (*relationship.Relationship, error) {
+	return nil, errors.New("unsupported mock")
 }
