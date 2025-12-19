@@ -3,10 +3,10 @@ package handlers
 import (
 	"errors"
 
-	"github.com/care-giver-app/care-giver-api/internal/event"
-	"github.com/care-giver-app/care-giver-api/internal/receiver"
-	"github.com/care-giver-app/care-giver-api/internal/relationship"
-	"github.com/care-giver-app/care-giver-api/internal/user"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/event"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/receiver"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/relationship"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/user"
 )
 
 var (
@@ -188,5 +188,9 @@ func (mr *MockRelationshipRepo) DeleteRelationship(uid, rid string) error {
 }
 
 func (mr *MockRelationshipRepo) GetRelationship(userID string, receiverID string) (*relationship.Relationship, error) {
+	return nil, errors.New("unsupported mock")
+}
+
+func (mr *MockRelationshipRepo) GetRelationshipsByEmailNotifications() ([]relationship.Relationship, error) {
 	return nil, errors.New("unsupported mock")
 }

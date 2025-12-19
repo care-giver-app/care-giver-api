@@ -7,12 +7,12 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/care-giver-app/care-giver-api/internal/appconfig"
-	"github.com/care-giver-app/care-giver-api/internal/awsconfig"
-	"github.com/care-giver-app/care-giver-api/internal/dynamo"
 	"github.com/care-giver-app/care-giver-api/internal/handlers"
-	"github.com/care-giver-app/care-giver-api/internal/log"
-	"github.com/care-giver-app/care-giver-api/internal/repository"
 	"github.com/care-giver-app/care-giver-api/internal/response"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/awsconfig"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/dynamo"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/log"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/repository"
 	"go.uber.org/zap"
 )
 
@@ -41,19 +41,19 @@ func init() {
 
 	appCfg.AWSConfig = cfg
 
-	dynamoClient = dynamo.CreateClient(appCfg)
+	dynamoClient = dynamo.CreateClient(appCfg.Env, appCfg.AWSConfig, appCfg.Logger)
 
 	appCfg.Logger.Info("initializing user respository")
-	userRepo = repository.NewUserRespository(context.TODO(), appCfg, dynamoClient)
+	userRepo = repository.NewUserRespository(context.TODO(), appCfg.UserTableName, dynamoClient, appCfg.Logger)
 
 	appCfg.Logger.Info("initializing receiver respository")
-	receiverRepo = repository.NewReceiverRespository(context.TODO(), appCfg, dynamoClient)
+	receiverRepo = repository.NewReceiverRespository(context.TODO(), appCfg.ReceiverTableName, dynamoClient, appCfg.Logger)
 
 	appCfg.Logger.Info("initializing event repository")
-	eventRepo = repository.NewEventRespository(context.TODO(), appCfg, dynamoClient)
+	eventRepo = repository.NewEventRespository(context.TODO(), appCfg.EventTableName, dynamoClient, appCfg.Logger)
 
 	appCfg.Logger.Info("initializing relationship repository")
-	relationshipRepo = repository.NewRelationshipRepository(context.TODO(), appCfg, dynamoClient)
+	relationshipRepo = repository.NewRelationshipRepository(context.TODO(), appCfg.RelationshipTableName, dynamoClient, appCfg.Logger)
 
 	appCfg.Logger.Info("initializing handler registry")
 	handlerRegistry = handlers.NewRegistry(appCfg, userRepo, receiverRepo, eventRepo, relationshipRepo)
