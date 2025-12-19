@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	awsevents "github.com/aws/aws-lambda-go/events"
-	"github.com/care-giver-app/care-giver-api/internal/log"
-	"github.com/care-giver-app/care-giver-api/internal/receiver"
-	"github.com/care-giver-app/care-giver-api/internal/relationship"
 	"github.com/care-giver-app/care-giver-api/internal/response"
-	"github.com/care-giver-app/care-giver-api/internal/user"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/log"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/receiver"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/relationship"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/user"
 	"go.uber.org/zap"
 )
 

@@ -8,9 +8,9 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/care-giver-app/care-giver-api/internal/appconfig"
-	"github.com/care-giver-app/care-giver-api/internal/relationship"
 	"github.com/care-giver-app/care-giver-api/internal/response"
-	"github.com/care-giver-app/care-giver-api/internal/user"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/relationship"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/user"
 	"github.com/stretchr/testify/assert"
 )
 
