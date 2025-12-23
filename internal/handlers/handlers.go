@@ -39,15 +39,16 @@ type Endpoint struct {
 type HandlerFunc func(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error)
 
 var handlersMap = map[Endpoint]HandlerFunc{
-	Endpoint{"/user", http.MethodPost}:                       HandleCreateUser,
-	Endpoint{"/user/{userId}", http.MethodGet}:               HandleGetUser,
-	Endpoint{"/user/primary-receiver", http.MethodPost}:      HandleUserPrimaryReceiver,
-	Endpoint{"/user/additional-receiver", http.MethodPost}:   HandleUserAdditionalReceiver,
-	Endpoint{"/user/relationships/{userId}", http.MethodGet}: HandleGetUserRelationships,
-	Endpoint{"/receiver/{receiverId}", http.MethodGet}:       HandleReceiver,
-	Endpoint{"/event", http.MethodPost}:                      HandleReceiverEvent,
-	Endpoint{"/event/{eventId}", http.MethodDelete}:          HandleDeleteReceiverEvent,
-	Endpoint{"/events/{receiverId}", http.MethodGet}:         HandleGetReceiverEvents,
+	{"/user", http.MethodPost}:                       HandleCreateUser,
+	{"/user/{userId}", http.MethodGet}:               HandleGetUser,
+	{"/user/primary-receiver", http.MethodPost}:      HandleUserPrimaryReceiver,
+	{"/user/additional-receiver", http.MethodPost}:   HandleUserAdditionalReceiver,
+	{"/user/relationships/{userId}", http.MethodGet}: HandleGetUserRelationships,
+	{"/receiver/{receiverId}", http.MethodGet}:       HandleReceiver,
+	{"/event", http.MethodPost}:                      HandleReceiverEvent,
+	{"/event/{eventId}", http.MethodDelete}:          HandleDeleteReceiverEvent,
+	{"/events/{receiverId}", http.MethodGet}:         HandleGetReceiverEvents,
+	{"/events/configs", http.MethodGet}:              HandleGetEventConfigs,
 }
 
 type RegistryProvider interface {

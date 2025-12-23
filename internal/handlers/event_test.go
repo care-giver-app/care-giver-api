@@ -408,3 +408,38 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 		})
 	}
 }
+
+func TestHandleGetEventConfigs(t *testing.T) {
+	tests := map[string]struct {
+		request events.APIGatewayProxyRequest
+	}{
+		"Happy Path - Configs Retrieved": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId": "User#123",
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			params := HandlerParams{
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          tc.request,
+				UserRepo:         testUserRepo,
+				ReceiverRepo:     testReceiverRepo,
+				EventRepo:        testEventRepo,
+				RelationshipRepo: testRelationshipRepo,
+			}
+
+			resp, err := HandleGetReceiverEvents(context.Background(), params)
+			assert.Nil(t, err)
+			assert.NotNil(t, resp)
+		})
+	}
+}
