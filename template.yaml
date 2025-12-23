@@ -172,6 +172,12 @@ Resources:
                   Required: true
               - method.request.querystring.userId:
                   Required: true
+        GetEventConfigs:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /events/configs
+            Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           ENV: !Ref Env
