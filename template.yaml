@@ -10,6 +10,10 @@ Parameters:
     Type: String
   UserPool:
     Type: String
+
+Conditions:
+  IsProd: !Equals [!Ref Env, "prod"]
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -188,12 +192,14 @@ Resources:
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
+    Condition: IsProd
     Properties:
       Name: !Sub ApplicationInsights-SAM-${AWS::StackName}
       ResourceQuery:
         Type: CLOUDFORMATION_STACK_1_0
   ApplicationInsightsMonitoring:
     Type: AWS::ApplicationInsights::Application
+    Condition: IsProd
     Properties:
       ResourceGroupName:
         Ref: ApplicationResourceGroup
