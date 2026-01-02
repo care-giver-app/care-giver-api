@@ -18,6 +18,7 @@ const (
 	addReceiverEvent    = "add receiver event"
 	deleteReceiverEvent = "delete receiver event"
 	getReceiverEvents   = "get receiver events"
+	getEventConfigs     = "get event configs"
 )
 
 type ReceiverEventRequest struct {
@@ -188,4 +189,16 @@ func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awseven
 
 	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, getReceiverEvents)
 	return response.FormatResponse(eventsList, http.StatusOK), nil
+}
+
+func HandleGetEventConfigs(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, getEventConfigs)
+
+	eventConfigs, err := event.GetAllConfigs()
+	if err != nil {
+		params.AppCfg.Logger.Error("error retrieving event configs", zap.Error(err))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+
+	return response.FormatResponse(eventConfigs, http.StatusOK), nil
 }
