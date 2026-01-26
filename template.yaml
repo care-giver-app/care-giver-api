@@ -66,6 +66,20 @@ Resources:
       - Ref: CareGiverAPIRole
     Metadata:
       SamResourceId: CareGiverAPIPolicy
+  CareGiverAPISQSPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub SQSCareGiverFeedback-${Env}
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - sqs:SendMessage
+          - sqs:GetQueueUrl
+          Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:care-giver-notifications-${Env}
+      Roles:
+      - Ref: CareGiverAPIRole
   CareGiverAPIRole:
     Type: AWS::IAM::Role
     Properties:
@@ -182,6 +196,12 @@ Resources:
             RestApiId: !Ref CareGiverAPI
             Path: /events/configs
             Method: GET
+        SubmitFeedback:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /feedback
+            Method: POST
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           ENV: !Ref Env
@@ -189,6 +209,7 @@ Resources:
           RECEIVER_TABLE_NAME: !Sub receiver-table-${Env}
           EVENT_TABLE_NAME: !Sub event-table-${Env}
           RELATIONSHIP_TABLE_NAME: !Sub relationship-table-${Env}
+          FEEDBACK_QUEUE_URL: !Sub https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/care-giver-notifications-${Env}
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
