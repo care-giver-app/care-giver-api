@@ -49,6 +49,7 @@ var handlersMap = map[Endpoint]HandlerFunc{
 	{"/event/{eventId}", http.MethodDelete}:          HandleDeleteReceiverEvent,
 	{"/events/{receiverId}", http.MethodGet}:         HandleGetReceiverEvents,
 	{"/events/configs", http.MethodGet}:              HandleGetEventConfigs,
+	{"/feedback", http.MethodPost}:                   HandleFeedbackRequest,
 }
 
 type RegistryProvider interface {
