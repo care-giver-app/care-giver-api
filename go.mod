@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.41.1
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.53.3
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.21
-	github.com/care-giver-app/care-giver-golang-common v0.3.1-0.20260315180318-6ee20fad353b
+	github.com/care-giver-app/care-giver-golang-common v0.3.1-0.20260315180908-2bdaeb4ffb4e
 	github.com/go-playground/validator/v10 v10.24.0
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.1
