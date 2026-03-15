@@ -10,6 +10,7 @@ import (
 	"github.com/care-giver-app/care-giver-golang-common/pkg/log"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/receiver"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/relationship"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/repository"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/user"
 	"go.uber.org/zap"
 )
@@ -181,7 +182,9 @@ func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awseven
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
-	eventsList, err := params.EventRepo.GetEvents(rid)
+	bound := repository.TimestampBound{}
+
+	eventsList, err := params.EventRepo.GetEvents(rid, bound)
 	if err != nil {
 		params.AppCfg.Logger.Error("error retrieving events from db", zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
