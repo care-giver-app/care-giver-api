@@ -46,6 +46,8 @@ github.com/care-giver-app/care-giver-golang-common v0.3.1-0.20260315174332-bb2e4
 github.com/care-giver-app/care-giver-golang-common v0.3.1-0.20260315174332-bb2e45192ff1/go.mod h1:KfypSFU/TS5b9mzTQVOQOX7YDc83CMNOvSdkdNI92Vc=
 github.com/care-giver-app/care-giver-golang-common v0.3.1-0.20260315175617-16c2989388d3 h1:I3486DJ1Ulp58loq7zLe08u2NZ1qFBJWqdKQ/8Albxo=
 github.com/care-giver-app/care-giver-golang-common v0.3.1-0.20260315175617-16c2989388d3/go.mod h1:KfypSFU/TS5b9mzTQVOQOX7YDc83CMNOvSdkdNI92Vc=
+github.com/care-giver-app/care-giver-golang-common v0.3.1-0.20260315180318-6ee20fad353b h1:i/XULLaDl0gACO/a5niTW8YOJgcrAJBL0uItTTznGJE=
+github.com/care-giver-app/care-giver-golang-common v0.3.1-0.20260315180318-6ee20fad353b/go.mod h1:KfypSFU/TS5b9mzTQVOQOX7YDc83CMNOvSdkdNI92Vc=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gabriel-vasile/mimetype v1.4.8 h1:FfZ3gj38NjllZIeJAmMhr+qKL8Wu+nOoI3GqacKw1NM=
