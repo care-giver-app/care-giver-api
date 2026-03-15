@@ -6,6 +6,7 @@ import (
 	"github.com/care-giver-app/care-giver-golang-common/pkg/event"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/receiver"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/relationship"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/repository"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/user"
 )
 
@@ -109,7 +110,7 @@ func (me *MockEventRepo) AddEvent(e *event.Entry) error {
 	}
 	return errors.New("unsupported mock")
 }
-func (me *MockEventRepo) GetEvents(rid string) ([]event.Entry, error) {
+func (me *MockEventRepo) GetEvents(rid string, bound repository.TimestampBound) ([]event.Entry, error) {
 	switch rid {
 	case "Receiver#123":
 		return []event.Entry{
