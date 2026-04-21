@@ -56,13 +56,12 @@ Resources:
           - dynamodb:Query
           - dynamodb:UpdateItem
           Resource: 
-          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/user-table-${Env}
-          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/user-table-${Env}/index/*
-          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/receiver-table-${Env}
-          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/event-table-${Env}
-          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/event-table-${Env}/index/*
-          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/relationship-table-${Env}
-          - !Sub arn:aws:dynamodb:${AWS::Region}:658340567265:table/relationship-table-${Env}/index/*
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/user-table-${Env}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/user-table-${Env}/index/*
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/receiver-table-${Env}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/event-test-table-${Env}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/relationship-table-${Env}
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/relationship-table-${Env}/index/*
       Roles:
       - Ref: CareGiverAPIRole
     Metadata:
@@ -208,7 +207,7 @@ Resources:
           ENV: !Ref Env
           USER_TABLE_NAME: !Sub user-table-${Env}
           RECEIVER_TABLE_NAME: !Sub receiver-table-${Env}
-          EVENT_TABLE_NAME: !Sub event-table-${Env}
+          EVENT_TABLE_NAME: !Sub event-test-table-${Env}
           RELATIONSHIP_TABLE_NAME: !Sub relationship-table-${Env}
           FEEDBACK_QUEUE_URL: !Sub https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/care-giver-notifications-${Env}
 

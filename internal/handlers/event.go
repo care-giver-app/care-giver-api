@@ -26,7 +26,8 @@ type ReceiverEventRequest struct {
 	ReceiverID string            `json:"receiverId" validate:"required"`
 	UserID     string            `json:"userId" validate:"required"`
 	Type       string            `json:"type" validate:"required"`
-	Timestamp  string            `json:"timestamp"`
+	StartTime  string            `json:"startTime" validate:"required"`
+	EndTime    string            `json:"endTime" validate:"required"`
 	Data       []event.DataPoint `json:"data"`
 	Note       string            `json:"note"`
 }
@@ -43,6 +44,12 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 
 	var rer ReceiverEventRequest
 	err := readRequestBody(params.Request.Body, &rer)
+	if err != nil {
+		params.AppCfg.Logger.Error(requestBodyError, zap.Error(err))
+		return response.CreateBadRequestResponse(), nil
+	}
+
+	err = validateTimestamps(rer.StartTime, rer.EndTime)
 	if err != nil {
 		params.AppCfg.Logger.Error(requestBodyError, zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
@@ -66,10 +73,6 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 	}
 
 	opts := []event.EntryOption{}
-	if rer.Timestamp != "" {
-		opts = append(opts, event.WithTimestamp(rer.Timestamp))
-	}
-
 	if len(rer.Data) > 0 {
 		opts = append(opts, event.WithData(rer.Data))
 	}
@@ -78,7 +81,7 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 		opts = append(opts, event.WithNote(rer.Note))
 	}
 
-	newEvent, err := event.NewEntry(rer.ReceiverID, u.UserID, rer.Type, opts...)
+	newEvent, err := event.NewEntry(rer.ReceiverID, u.UserID, rer.Type, rer.StartTime, rer.EndTime, opts...)
 	if err != nil {
 		params.AppCfg.Logger.Error("error creating new event entry", zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
