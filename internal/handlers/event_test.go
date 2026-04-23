@@ -458,6 +458,20 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
+		"Sad Path - Invalid Date Bounds Return Bad Request": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId":    "User#123",
+					"startTime": "not-a-date",
+					"endTime":   "2026-04-23T23:59:59Z",
+				},
+			},
+			expectedResponse: response.CreateBadRequestResponse(),
+		},
 	}
 
 	for name, tc := range tests {

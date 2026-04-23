@@ -189,6 +189,10 @@ func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awseven
 	startTime := params.Request.QueryStringParameters["startTime"]
 	endTime := params.Request.QueryStringParameters["endTime"]
 	if startTime != "" && endTime != "" {
+		if err := validateTimestamps(startTime, endTime); err != nil {
+			params.AppCfg.Logger.Error("invalid date bound query params", zap.Error(err))
+			return response.CreateBadRequestResponse(), nil
+		}
 		bound = repository.TimestampBound{Lower: startTime, Upper: endTime}
 	}
 	eventsList, err := params.EventRepo.GetEvents(rid, bound)
