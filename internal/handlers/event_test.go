@@ -347,6 +347,47 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 				}, http.StatusOK,
 			),
 		},
+		"Happy Path - Events Retrieved With Date Bounds": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId":    "User#123",
+					"startTime": "2026-04-23T00:00:00Z",
+					"endTime":   "2026-04-23T23:59:59Z",
+				},
+			},
+			expectedResponse: response.FormatResponse(
+				[]event.Entry{
+					{
+						EventID:    "Event#123",
+						ReceiverID: "Receiver#123",
+					},
+				}, http.StatusOK,
+			),
+		},
+		"Happy Path - Events Retrieved With Only One Date Param Falls Back To Unbounded": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId":    "User#123",
+					"startTime": "2026-04-23T00:00:00Z",
+				},
+			},
+			expectedResponse: response.FormatResponse(
+				[]event.Entry{
+					{
+						EventID:    "Event#123",
+						ReceiverID: "Receiver#123",
+					},
+				}, http.StatusOK,
+			),
+		},
 		"Sad Path - Bad Path Parameter - receiverId": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodGet,

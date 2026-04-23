@@ -186,6 +186,11 @@ func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awseven
 	}
 
 	bound := repository.TimestampBound{}
+	startTime := params.Request.QueryStringParameters["startTime"]
+	endTime := params.Request.QueryStringParameters["endTime"]
+	if startTime != "" && endTime != "" {
+		bound = repository.TimestampBound{Lower: startTime, Upper: endTime}
+	}
 	eventsList, err := params.EventRepo.GetEvents(rid, bound)
 	if err != nil {
 		params.AppCfg.Logger.Error("error retrieving events from db", zap.Error(err))
