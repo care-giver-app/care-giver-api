@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/go-playground/validator/v10"
@@ -67,6 +68,24 @@ func readRequestBody(requestBody string, requestStruct interface{}) error {
 	err = validate.Struct(requestStruct)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func validateTimestamps(startTime, endTime string) error {
+	st, err := time.Parse(time.RFC3339, startTime)
+	if err != nil {
+		return fmt.Errorf("failed to RFC3339 parse start time of %s", startTime)
+	}
+
+	et, err := time.Parse(time.RFC3339, endTime)
+	if err != nil {
+		return fmt.Errorf("failed to RFC3339 parse end time of %s", endTime)
+	}
+
+	if et.Before(st) {
+		return fmt.Errorf("end time is before start time - %s is before %s", endTime, startTime)
 	}
 
 	return nil

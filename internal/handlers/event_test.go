@@ -26,6 +26,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"receiverId": "Receiver#123",
 				"userID":     "User#123",
 				"type":       "Shower",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedResponseBody: map[string]interface{}{
 				"status":     "Success",
@@ -39,7 +41,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"receiverId": "Receiver#123",
 				"userID":     "User#123",
 				"type":       "Shower",
-				"timestamp":  "2023-10-01T12:00:00Z",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedResponseBody: map[string]interface{}{
 				"status":     "Success",
@@ -53,6 +56,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"receiverId": "Receiver#123",
 				"userID":     "User#123",
 				"type":       "Shower",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 				"data": []event.DataPoint{
 					{
 						Name:  "some name",
@@ -80,6 +85,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"receiverId": "Receiver#123",
 				"userId":     "User#Error",
 				"type":       "Shower",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
@@ -89,6 +96,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"receiverId": "Receiver#123",
 				"userId":     "User#RelationshipError",
 				"type":       "Shower",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
@@ -98,6 +107,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"receiverId": "Receiver#123",
 				"userId":     "User#NotACareGiver",
 				"type":       "Shower",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedStatusCode: http.StatusForbidden,
 		},
@@ -107,6 +118,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"receiverId": "Receiver#123",
 				"userId":     "User#123",
 				"type":       "badEventType",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedStatusCode: http.StatusBadRequest,
 		},
@@ -117,6 +130,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"userId":     "User#123",
 				"type":       "Weight",
 				"data":       "wrongDataType",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedStatusCode: http.StatusBadRequest,
 		},
@@ -126,8 +141,21 @@ func TestHandleReceiverEvent(t *testing.T) {
 				"receiverId": "Receiver#Error",
 				"userId":     "User#123",
 				"type":       "Weight",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedStatusCode: http.StatusInternalServerError,
+		},
+		"Sad Path - End Time Before Start Time": {
+			requestMethod: http.MethodPost,
+			requestBody: map[string]interface{}{
+				"receiverId": "Receiver#123",
+				"userID":     "User#123",
+				"type":       "Shower",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2023-09-01T12:00:00Z",
+			},
+			expectedStatusCode: http.StatusBadRequest,
 		},
 	}
 	for name, tc := range tests {
@@ -319,6 +347,47 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 				}, http.StatusOK,
 			),
 		},
+		"Happy Path - Events Retrieved With Date Bounds": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId":    "User#123",
+					"startTime": "2026-04-23T00:00:00Z",
+					"endTime":   "2026-04-23T23:59:59Z",
+				},
+			},
+			expectedResponse: response.FormatResponse(
+				[]event.Entry{
+					{
+						EventID:    "Event#123",
+						ReceiverID: "Receiver#123",
+					},
+				}, http.StatusOK,
+			),
+		},
+		"Happy Path - Events Retrieved With Only One Date Param Falls Back To Unbounded": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId":    "User#123",
+					"startTime": "2026-04-23T00:00:00Z",
+				},
+			},
+			expectedResponse: response.FormatResponse(
+				[]event.Entry{
+					{
+						EventID:    "Event#123",
+						ReceiverID: "Receiver#123",
+					},
+				}, http.StatusOK,
+			),
+		},
 		"Sad Path - Bad Path Parameter - receiverId": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod: http.MethodGet,
@@ -388,6 +457,20 @@ func TestHandleGetReceiverEvents(t *testing.T) {
 				},
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
+		"Sad Path - Invalid Date Bounds Return Bad Request": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId":    "User#123",
+					"startTime": "not-a-date",
+					"endTime":   "2026-04-23T23:59:59Z",
+				},
+			},
+			expectedResponse: response.CreateBadRequestResponse(),
 		},
 	}
 
