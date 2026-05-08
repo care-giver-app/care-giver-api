@@ -123,7 +123,7 @@ func TestHandleGetReceiverCareGivers(t *testing.T) {
 			},
 			expectedResponse: response.FormatResponse(GetReceiverCareGiversResponse{
 				CareGivers: []CareGiverResponse{
-					{UserID: "User#123", FirstName: "", LastName: "", IsPrimary: true},
+					{UserID: "User#123", FirstName: "John", LastName: "Doe", IsPrimary: true},
 					{UserID: "User#456", FirstName: "Jane", LastName: "Smith", IsPrimary: false},
 				},
 			}, http.StatusOK),
@@ -178,6 +178,18 @@ func TestHandleGetReceiverCareGivers(t *testing.T) {
 				HTTPMethod: http.MethodGet,
 				PathParameters: map[string]string{
 					"receiverId": "Receiver#RelationshipError",
+				},
+				QueryStringParameters: map[string]string{
+					"userId": "User#123",
+				},
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
+		"Sad Path - User Repo Error During CareGiver Hydration": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#UserError",
 				},
 				QueryStringParameters: map[string]string{
 					"userId": "User#123",

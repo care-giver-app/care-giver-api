@@ -16,7 +16,7 @@ const (
 	requestBodyError          = "error reading request body"
 	pathParametersError       = "error validating path parameters"
 	queryParamsError          = "error validating query parameters"
-	userDatbaseError          = "error retrieving user from db"
+	userDatabaseError         = "error retrieving user from db"
 	receiverDatabaseError     = "error retrieving receiver from db"
 	userNotCareGiverError     = "user is not a caregiver for the receiver"
 	relationshipDatabaseError = "error retrieving relationship from db"

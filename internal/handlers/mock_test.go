@@ -33,7 +33,9 @@ func (mu *MockUserRepo) GetUser(uid string) (user.User, error) {
 	switch uid {
 	case "User#123":
 		return user.User{
-			UserID: "User#123",
+			UserID:    "User#123",
+			FirstName: "John",
+			LastName:  "Doe",
 		}, nil
 	case "User#RelationshipError":
 		return user.User{
@@ -168,6 +170,12 @@ func (mr *MockRelationshipRepo) GetRelationshipsByUser(uid string) ([]relationsh
 				PrimaryCareGiver:   true,
 				EmailNotifications: false,
 			},
+			{
+				UserID:             "User#123",
+				ReceiverID:         "Receiver#UserError",
+				PrimaryCareGiver:   true,
+				EmailNotifications: false,
+			},
 		}, nil
 	case "User#NotACareGiver":
 		return []relationship.Relationship{}, nil
@@ -225,6 +233,14 @@ func (mr *MockRelationshipRepo) GetRelationshipsByReceiver(rid string) ([]relati
 		}, nil
 	case "Receiver#RelationshipError":
 		return nil, errors.New("error retrieving relationships from db")
+	case "Receiver#UserError":
+		return []relationship.Relationship{
+			{
+				UserID:           "User#Error",
+				ReceiverID:       "Receiver#UserError",
+				PrimaryCareGiver: true,
+			},
+		}, nil
 	}
 	return nil, errors.New("unsupported mock")
 }

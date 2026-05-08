@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	getReceiver = "get receiver"
+	getReceiver           = "get receiver"
+	getReceiverCareGivers = "get receiver care givers"
 )
 
 func HandleReceiver(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
@@ -65,7 +66,7 @@ type GetReceiverCareGiversResponse struct {
 }
 
 func HandleGetReceiverCareGivers(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
-	params.AppCfg.Logger.Sugar().Infof(handlerStart, "get receiver care givers")
+	params.AppCfg.Logger.Sugar().Infof(handlerStart, getReceiverCareGivers)
 
 	rid, err := validatePathParameters(params.Request, receiver.ParamID, receiver.DBPrefix)
 	if err != nil {
@@ -92,7 +93,7 @@ func HandleGetReceiverCareGivers(ctx context.Context, params HandlerParams) (aws
 
 	receiverRelationships, err := params.RelationshipRepo.GetRelationshipsByReceiver(rid)
 	if err != nil {
-		params.AppCfg.Logger.Error(relationshipDatabaseError, zap.Error(err))
+		params.AppCfg.Logger.Error(relationshipDatabaseError, zap.String(log.ReceiverIDLogKey, rid), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
@@ -100,7 +101,7 @@ func HandleGetReceiverCareGivers(ctx context.Context, params HandlerParams) (aws
 	for _, rel := range receiverRelationships {
 		u, err := params.UserRepo.GetUser(rel.UserID)
 		if err != nil {
-			params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, rel.UserID), zap.Error(err))
+			params.AppCfg.Logger.Error(userDatabaseError, zap.String(log.UserIDLogKey, rel.UserID), zap.Error(err))
 			return response.CreateInternalServerErrorResponse(), nil
 		}
 		careGivers = append(careGivers, CareGiverResponse{
@@ -111,7 +112,7 @@ func HandleGetReceiverCareGivers(ctx context.Context, params HandlerParams) (aws
 		})
 	}
 
-	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, "get receiver care givers")
+	params.AppCfg.Logger.Sugar().Infof(handlerSuccessful, getReceiverCareGivers)
 	return response.FormatResponse(GetReceiverCareGiversResponse{
 		CareGivers: careGivers,
 	}, http.StatusOK), nil

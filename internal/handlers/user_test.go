@@ -91,7 +91,9 @@ func TestHandleGetUser(t *testing.T) {
 				},
 			},
 			expectedResponse: response.FormatResponse(user.User{
-				UserID: "User#123",
+				UserID:    "User#123",
+				FirstName: "John",
+				LastName:  "Doe",
 			}, http.StatusOK),
 		},
 		"Sad Path - Wrong Method": {
@@ -303,6 +305,12 @@ func TestHandlerGetUserRelationships(t *testing.T) {
 					{
 						UserID:             "User#123",
 						ReceiverID:         "Receiver#RelationshipError",
+						PrimaryCareGiver:   true,
+						EmailNotifications: false,
+					},
+					{
+						UserID:             "User#123",
+						ReceiverID:         "Receiver#UserError",
 						PrimaryCareGiver:   true,
 						EmailNotifications: false,
 					},
