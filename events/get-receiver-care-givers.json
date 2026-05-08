@@ -1,0 +1,17 @@
+{
+  "httpMethod": "GET",
+  "path": "/receiver/care-givers/Receiver%23123",
+  "resource": "/receiver/care-givers/{receiverId}",
+  "pathParameters": {
+    "receiverId": "Receiver#123"
+  },
+  "queryStringParameters": {
+    "userId": "User#123"
+  },
+  "requestContext": {
+    "resourcePath": "/receiver/care-givers/{receiverId}"
+  },
+  "headers": {
+    "Authorization": "Bearer test-token"
+  }
+}

@@ -154,6 +154,15 @@ Resources:
             RequestParameters:
               - method.request.querystring.userId:
                   Required: true
+        GetReceiverCareGivers:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /receiver/care-givers/{receiverId}
+            Method: GET
+            RequestParameters:
+              - method.request.querystring.userId:
+                  Required: true
         AddReceiverEvent:
           Type: Api
           Properties:

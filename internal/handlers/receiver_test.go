@@ -105,3 +105,100 @@ func TestHandleReceiver(t *testing.T) {
 		})
 	}
 }
+
+func TestHandleGetReceiverCareGivers(t *testing.T) {
+	tests := map[string]struct {
+		request          events.APIGatewayProxyRequest
+		expectedResponse events.APIGatewayProxyResponse
+	}{
+		"Happy Path - Got CareGivers": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId": "User#123",
+				},
+			},
+			expectedResponse: response.FormatResponse(GetReceiverCareGiversResponse{
+				CareGivers: []CareGiverResponse{
+					{UserID: "User#123", FirstName: "", LastName: "", IsPrimary: true},
+					{UserID: "User#456", FirstName: "Jane", LastName: "Smith", IsPrimary: false},
+				},
+			}, http.StatusOK),
+		},
+		"Sad Path - Bad Path Parameters": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "BadValue",
+				},
+				QueryStringParameters: map[string]string{
+					"userId": "User#123",
+				},
+			},
+			expectedResponse: response.CreateBadRequestResponse(),
+		},
+		"Sad Path - Missing userId Query Param": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+			},
+			expectedResponse: response.CreateBadRequestResponse(),
+		},
+		"Sad Path - User Is Not A CareGiver": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId": "User#NotACareGiver",
+				},
+			},
+			expectedResponse: response.CreateAccessDeniedResponse(),
+		},
+		"Sad Path - Relationship Repo Error (user lookup)": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#123",
+				},
+				QueryStringParameters: map[string]string{
+					"userId": "User#RelationshipError",
+				},
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
+		"Sad Path - Receiver Relationship Repo Error": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				PathParameters: map[string]string{
+					"receiverId": "Receiver#RelationshipError",
+				},
+				QueryStringParameters: map[string]string{
+					"userId": "User#123",
+				},
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			params := HandlerParams{
+				AppCfg:           appconfig.NewAppConfig(),
+				Request:          tc.request,
+				UserRepo:         testUserRepo,
+				RelationshipRepo: testRelationshipRepo,
+			}
+			resp, err := HandleGetReceiverCareGivers(context.Background(), params)
+
+			assert.Nil(t, err)
+			assert.Equal(t, tc.expectedResponse, resp)
+		})
+	}
+}

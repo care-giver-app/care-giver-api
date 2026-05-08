@@ -300,6 +300,12 @@ func TestHandlerGetUserRelationships(t *testing.T) {
 						PrimaryCareGiver:   false,
 						EmailNotifications: false,
 					},
+					{
+						UserID:             "User#123",
+						ReceiverID:         "Receiver#RelationshipError",
+						PrimaryCareGiver:   true,
+						EmailNotifications: false,
+					},
 				},
 				Status: response.Success,
 			}, http.StatusOK),
