@@ -16,7 +16,7 @@ const (
 	requestBodyError          = "error reading request body"
 	pathParametersError       = "error validating path parameters"
 	queryParamsError          = "error validating query parameters"
-	userDatbaseError          = "error retrieving user from db"
+	userDatabaseError         = "error retrieving user from db"
 	receiverDatabaseError     = "error retrieving receiver from db"
 	userNotCareGiverError     = "user is not a caregiver for the receiver"
 	relationshipDatabaseError = "error retrieving relationship from db"
@@ -44,7 +44,8 @@ var handlersMap = map[Endpoint]HandlerFunc{
 	{"/user/primary-receiver", http.MethodPost}:      HandleUserPrimaryReceiver,
 	{"/user/additional-receiver", http.MethodPost}:   HandleUserAdditionalReceiver,
 	{"/user/relationships/{userId}", http.MethodGet}: HandleGetUserRelationships,
-	{"/receiver/{receiverId}", http.MethodGet}:       HandleReceiver,
+	{"/receiver/{receiverId}", http.MethodGet}:                HandleReceiver,
+	{"/receiver/care-givers/{receiverId}", http.MethodGet}: HandleGetReceiverCareGivers,
 	{"/event", http.MethodPost}:                      HandleReceiverEvent,
 	{"/event/{eventId}", http.MethodDelete}:          HandleDeleteReceiverEvent,
 	{"/events/{receiverId}", http.MethodGet}:         HandleGetReceiverEvents,

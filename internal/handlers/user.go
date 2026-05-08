@@ -96,7 +96,7 @@ func HandleGetUser(ctx context.Context, params HandlerParams) (events.APIGateway
 
 	u, err := params.UserRepo.GetUser(uid)
 	if err != nil {
-		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
+		params.AppCfg.Logger.Error(userDatabaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
@@ -163,7 +163,7 @@ func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (ev
 
 	additionalUser, err := params.UserRepo.GetUserByEmail(additionalReceiverRequest.Email)
 	if err != nil {
-		params.AppCfg.Logger.Error(userDatbaseError, zap.Error(err))
+		params.AppCfg.Logger.Error(userDatabaseError, zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 

@@ -33,7 +33,9 @@ func (mu *MockUserRepo) GetUser(uid string) (user.User, error) {
 	switch uid {
 	case "User#123":
 		return user.User{
-			UserID: "User#123",
+			UserID:    "User#123",
+			FirstName: "John",
+			LastName:  "Doe",
 		}, nil
 	case "User#RelationshipError":
 		return user.User{
@@ -42,6 +44,12 @@ func (mu *MockUserRepo) GetUser(uid string) (user.User, error) {
 	case "User#NotACareGiver":
 		return user.User{
 			UserID: "User#NotACareGiver",
+		}, nil
+	case "User#456":
+		return user.User{
+			UserID:    "User#456",
+			FirstName: "Jane",
+			LastName:  "Smith",
 		}, nil
 	case "User#Error":
 		return user.User{}, errors.New("error getting user from db")
@@ -156,6 +164,18 @@ func (mr *MockRelationshipRepo) GetRelationshipsByUser(uid string) ([]relationsh
 				PrimaryCareGiver:   false,
 				EmailNotifications: false,
 			},
+			{
+				UserID:             "User#123",
+				ReceiverID:         "Receiver#RelationshipError",
+				PrimaryCareGiver:   true,
+				EmailNotifications: false,
+			},
+			{
+				UserID:             "User#123",
+				ReceiverID:         "Receiver#UserError",
+				PrimaryCareGiver:   true,
+				EmailNotifications: false,
+			},
 		}, nil
 	case "User#NotACareGiver":
 		return []relationship.Relationship{}, nil
@@ -193,5 +213,34 @@ func (mr *MockRelationshipRepo) GetRelationship(userID string, receiverID string
 }
 
 func (mr *MockRelationshipRepo) GetRelationshipsByEmailNotifications() ([]relationship.Relationship, error) {
+	return nil, errors.New("unsupported mock")
+}
+
+func (mr *MockRelationshipRepo) GetRelationshipsByReceiver(rid string) ([]relationship.Relationship, error) {
+	switch rid {
+	case "Receiver#123":
+		return []relationship.Relationship{
+			{
+				UserID:           "User#123",
+				ReceiverID:       "Receiver#123",
+				PrimaryCareGiver: true,
+			},
+			{
+				UserID:           "User#456",
+				ReceiverID:       "Receiver#123",
+				PrimaryCareGiver: false,
+			},
+		}, nil
+	case "Receiver#RelationshipError":
+		return nil, errors.New("error retrieving relationships from db")
+	case "Receiver#UserError":
+		return []relationship.Relationship{
+			{
+				UserID:           "User#Error",
+				ReceiverID:       "Receiver#UserError",
+				PrimaryCareGiver: true,
+			},
+		}, nil
+	}
 	return nil, errors.New("unsupported mock")
 }
