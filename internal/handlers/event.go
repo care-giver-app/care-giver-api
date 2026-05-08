@@ -57,7 +57,7 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 
 	u, err := params.UserRepo.GetUser(rer.UserID)
 	if err != nil {
-		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, rer.UserID), zap.Error(err))
+		params.AppCfg.Logger.Error(userDatabaseError, zap.String(log.UserIDLogKey, rer.UserID), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
@@ -124,7 +124,7 @@ func HandleDeleteReceiverEvent(ctx context.Context, params HandlerParams) (awsev
 
 	u, err := params.UserRepo.GetUser(uid)
 	if err != nil {
-		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
+		params.AppCfg.Logger.Error(userDatabaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
@@ -170,7 +170,7 @@ func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awseven
 
 	u, err := params.UserRepo.GetUser(uid)
 	if err != nil {
-		params.AppCfg.Logger.Error(userDatbaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
+		params.AppCfg.Logger.Error(userDatabaseError, zap.String(log.UserIDLogKey, uid), zap.Error(err))
 		return response.CreateInternalServerErrorResponse(), nil
 	}
 
