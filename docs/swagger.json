@@ -9,6 +9,221 @@
     "host": "api.caretosher.com",
     "basePath": "/",
     "paths": {
+        "/event": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Create a care event for a receiver",
+                "parameters": [
+                    {
+                        "description": "Event details. startTime and endTime must be RFC3339. type must match a valid event config.",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ReceiverEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ReceiverEventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/event/{eventId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Delete a care event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID (format: Event#\u003cuuid\u003e)",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Receiver ID (format: Receiver#\u003cuuid\u003e)",
+                        "name": "receiverId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID of the requesting user (format: User#\u003cuuid\u003e)",
+                        "name": "userId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/configs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get all available event type configurations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/event.EventConfig"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{receiverId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get all care events for a receiver",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Receiver ID (format: Receiver#\u003cuuid\u003e)",
+                        "name": "receiverId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID of the requesting user (format: User#\u003cuuid\u003e)",
+                        "name": "userId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start of time range (RFC3339). Must be provided with endTime.",
+                        "name": "startTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End of time range (RFC3339). Must be provided with startTime.",
+                        "name": "endTime",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/event.Entry"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/receiver/care-givers/{receiverId}": {
             "get": {
                 "security": [
@@ -359,6 +574,171 @@
         }
     },
     "definitions": {
+        "event.AlertThresholds": {
+            "type": "object",
+            "properties": {
+                "critical": {
+                    "type": "integer"
+                },
+                "red": {
+                    "type": "integer"
+                },
+                "yellow": {
+                    "type": "integer"
+                }
+            }
+        },
+        "event.ColorConfig": {
+            "type": "object",
+            "properties": {
+                "primary": {
+                    "type": "string"
+                },
+                "secondary": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.DataConfig": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.DataPoint": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {}
+            }
+        },
+        "event.Entry": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.DataPoint"
+                    }
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "eventId": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "receiverId": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.EventConfig": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "$ref": "#/definitions/event.ColorConfig"
+                },
+                "data": {
+                    "$ref": "#/definitions/event.DataConfig"
+                },
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.FieldConfig"
+                    }
+                },
+                "graph": {
+                    "$ref": "#/definitions/event.GraphConfig"
+                },
+                "hasQuickAdd": {
+                    "type": "boolean"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "monitor": {
+                    "$ref": "#/definitions/event.MonitorConfig"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "upcoming": {
+                    "$ref": "#/definitions/event.UpcomingConfig"
+                }
+            }
+        },
+        "event.FieldConfig": {
+            "type": "object",
+            "properties": {
+                "inputType": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "event.GraphConfig": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.MonitorConfig": {
+            "type": "object",
+            "properties": {
+                "alertThresholds": {
+                    "$ref": "#/definitions/event.AlertThresholds"
+                },
+                "showLastValue": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "event.UpcomingConfig": {
+            "type": "object",
+            "properties": {
+                "lookAheadDays": {
+                    "type": "integer"
+                },
+                "show": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handlers.AdditionalReceiverRequest": {
             "type": "object",
             "required": [
@@ -472,6 +852,56 @@
         "handlers.PrimaryReceiverResponse": {
             "type": "object",
             "properties": {
+                "receiverId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ReceiverEventRequest": {
+            "type": "object",
+            "required": [
+                "endTime",
+                "receiverId",
+                "startTime",
+                "type",
+                "userId"
+            ],
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.DataPoint"
+                    }
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "receiverId": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ReceiverEventResponse": {
+            "type": "object",
+            "properties": {
+                "eventId": {
+                    "type": "string"
+                },
                 "receiverId": {
                     "type": "string"
                 },
