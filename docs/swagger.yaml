@@ -151,6 +151,18 @@ definitions:
       userId:
         type: string
     type: object
+  handlers.FeedbackRequest:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  handlers.FeedbackResponse:
+    properties:
+      status:
+        type: string
+    type: object
   handlers.GetReceiverCareGiversResponse:
     properties:
       careGivers:
@@ -397,6 +409,37 @@ paths:
       summary: Get all available event type configurations
       tags:
       - events
+  /feedback:
+    post:
+      parameters:
+      - description: Feedback message
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.FeedbackRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.FeedbackResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Submit user feedback (enqueues a notification via SQS)
+      tags:
+      - feedback
   /receiver/{receiverId}:
     get:
       parameters:
