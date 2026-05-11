@@ -38,6 +38,15 @@ type ReceiverEventResponse struct {
 	Status     string `json:"status"`
 }
 
+// @Summary Create a care event for a receiver
+// @Tags events
+// @Security BearerAuth
+// @Param body body ReceiverEventRequest true "Event details. startTime and endTime must be RFC3339. type must match a valid event config."
+// @Success 200 {object} ReceiverEventResponse
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /event [post]
 func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, addReceiverEvent)
 	params.AppCfg.Logger.Info("handling add receiver event")
@@ -101,6 +110,17 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 	}, http.StatusOK), nil
 }
 
+// @Summary Delete a care event
+// @Tags events
+// @Security BearerAuth
+// @Param eventId path string true "Event ID (format: Event#<uuid>)"
+// @Param receiverId query string true "Receiver ID (format: Receiver#<uuid>)"
+// @Param userId query string true "ID of the requesting user (format: User#<uuid>)"
+// @Success 200 {object} map[string]string
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /event/{eventId} [delete]
 func HandleDeleteReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, deleteReceiverEvent)
 
@@ -153,6 +173,18 @@ func HandleDeleteReceiverEvent(ctx context.Context, params HandlerParams) (awsev
 	), nil
 }
 
+// @Summary Get all care events for a receiver
+// @Tags events
+// @Security BearerAuth
+// @Param receiverId path string true "Receiver ID (format: Receiver#<uuid>)"
+// @Param userId query string true "ID of the requesting user (format: User#<uuid>)"
+// @Param startTime query string false "Start of time range (RFC3339). Must be provided with endTime."
+// @Param endTime query string false "End of time range (RFC3339). Must be provided with startTime."
+// @Success 200 {object} []event.Entry
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /events/{receiverId} [get]
 func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, getReceiverEvents)
 
@@ -205,6 +237,12 @@ func HandleGetReceiverEvents(ctx context.Context, params HandlerParams) (awseven
 	return response.FormatResponse(eventsList, http.StatusOK), nil
 }
 
+// @Summary Get all available event type configurations
+// @Tags events
+// @Security BearerAuth
+// @Success 200 {object} []event.EventConfig
+// @Failure 500 {string} string "Internal server error"
+// @Router /events/configs [get]
 func HandleGetEventConfigs(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, getEventConfigs)
 

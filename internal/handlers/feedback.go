@@ -35,6 +35,15 @@ type FeedbackNotification struct {
 	Message string `json:"message"`
 }
 
+// @Summary Submit user feedback (enqueues a notification via SQS)
+// @Tags feedback
+// @Security BearerAuth
+// @Param body body FeedbackRequest true "Feedback message"
+// @Success 200 {object} FeedbackResponse
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /feedback [post]
 func HandleFeedbackRequest(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, submitFeedback)
 

@@ -31,5 +31,14 @@ test:
 test-report: test
 	go tool cover -html=cover.out
 
-lint: 
+lint:
 	golangci-lint run
+
+swagger:
+	go run github.com/swaggo/swag/cmd/swag@latest init -g main.go -o docs --outputTypes json,yaml --parseDependency
+
+swagger-ui:
+	docker run --rm -p 8080:8080 \
+	  -e SWAGGER_JSON=/spec/swagger.json \
+	  -v $(PWD)/docs:/spec \
+	  swaggerapi/swagger-ui

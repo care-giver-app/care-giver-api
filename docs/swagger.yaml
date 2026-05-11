@@ -1,0 +1,669 @@
+basePath: /
+definitions:
+  event.AlertThresholds:
+    properties:
+      critical:
+        type: integer
+      red:
+        type: integer
+      yellow:
+        type: integer
+    type: object
+  event.ColorConfig:
+    properties:
+      primary:
+        type: string
+      secondary:
+        type: string
+    type: object
+  event.DataConfig:
+    properties:
+      name:
+        type: string
+      unit:
+        type: string
+    type: object
+  event.DataPoint:
+    properties:
+      name:
+        type: string
+      value: {}
+    type: object
+  event.Entry:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/event.DataPoint'
+        type: array
+      endTime:
+        type: string
+      eventId:
+        type: string
+      note:
+        type: string
+      receiverId:
+        type: string
+      startTime:
+        type: string
+      type:
+        type: string
+      userId:
+        type: string
+    type: object
+  event.EventConfig:
+    properties:
+      color:
+        $ref: '#/definitions/event.ColorConfig'
+      data:
+        $ref: '#/definitions/event.DataConfig'
+      fields:
+        items:
+          $ref: '#/definitions/event.FieldConfig'
+        type: array
+      graph:
+        $ref: '#/definitions/event.GraphConfig'
+      hasQuickAdd:
+        type: boolean
+      icon:
+        type: string
+      monitor:
+        $ref: '#/definitions/event.MonitorConfig'
+      type:
+        type: string
+      upcoming:
+        $ref: '#/definitions/event.UpcomingConfig'
+    type: object
+  event.FieldConfig:
+    properties:
+      inputType:
+        type: string
+      label:
+        type: string
+      name:
+        type: string
+      placeholder:
+        type: string
+      required:
+        type: boolean
+    type: object
+  event.GraphConfig:
+    properties:
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  event.MonitorConfig:
+    properties:
+      alertThresholds:
+        $ref: '#/definitions/event.AlertThresholds'
+      showLastValue:
+        type: boolean
+    type: object
+  event.UpcomingConfig:
+    properties:
+      lookAheadDays:
+        type: integer
+      show:
+        type: boolean
+    type: object
+  handlers.AdditionalReceiverRequest:
+    properties:
+      email:
+        type: string
+      receiverId:
+        type: string
+      userId:
+        type: string
+    required:
+    - email
+    - receiverId
+    - userId
+    type: object
+  handlers.CareGiverResponse:
+    properties:
+      firstName:
+        type: string
+      isPrimary:
+        type: boolean
+      lastName:
+        type: string
+      userId:
+        type: string
+    type: object
+  handlers.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    type: object
+  handlers.CreateUserResponse:
+    properties:
+      status:
+        type: string
+      userId:
+        type: string
+    type: object
+  handlers.FeedbackRequest:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  handlers.FeedbackResponse:
+    properties:
+      status:
+        type: string
+    type: object
+  handlers.GetReceiverCareGiversResponse:
+    properties:
+      careGivers:
+        items:
+          $ref: '#/definitions/handlers.CareGiverResponse'
+        type: array
+    type: object
+  handlers.GetUserRelationshipsResponse:
+    properties:
+      relationships:
+        items:
+          $ref: '#/definitions/relationship.Relationship'
+        type: array
+      status:
+        type: string
+    type: object
+  handlers.PrimaryReceiverRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      userId:
+        type: string
+    required:
+    - firstName
+    - lastName
+    - userId
+    type: object
+  handlers.PrimaryReceiverResponse:
+    properties:
+      receiverId:
+        type: string
+      status:
+        type: string
+    type: object
+  handlers.ReceiverEventRequest:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/event.DataPoint'
+        type: array
+      endTime:
+        type: string
+      note:
+        type: string
+      receiverId:
+        type: string
+      startTime:
+        type: string
+      type:
+        type: string
+      userId:
+        type: string
+    required:
+    - endTime
+    - receiverId
+    - startTime
+    - type
+    - userId
+    type: object
+  handlers.ReceiverEventResponse:
+    properties:
+      eventId:
+        type: string
+      receiverId:
+        type: string
+      status:
+        type: string
+    type: object
+  receiver.Receiver:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      receiverId:
+        type: string
+    type: object
+  relationship.Relationship:
+    properties:
+      emailNotifications:
+        type: boolean
+      primaryCareGiver:
+        type: boolean
+      receiverId:
+        type: string
+      userId:
+        type: string
+    type: object
+  user.User:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      userId:
+        type: string
+    type: object
+host: api.caretosher.com
+info:
+  contact: {}
+  description: REST API for the CareToSher care-giving collaboration platform. All
+    routes require a Cognito JWT except POST /user.
+  title: CareToSher API
+  version: "1.0"
+paths:
+  /event:
+    post:
+      parameters:
+      - description: Event details. startTime and endTime must be RFC3339. type must
+          match a valid event config.
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ReceiverEventRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ReceiverEventResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a care event for a receiver
+      tags:
+      - events
+  /event/{eventId}:
+    delete:
+      parameters:
+      - description: 'Event ID (format: Event#<uuid>)'
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: 'Receiver ID (format: Receiver#<uuid>)'
+        in: query
+        name: receiverId
+        required: true
+        type: string
+      - description: 'ID of the requesting user (format: User#<uuid>)'
+        in: query
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete a care event
+      tags:
+      - events
+  /events/{receiverId}:
+    get:
+      parameters:
+      - description: 'Receiver ID (format: Receiver#<uuid>)'
+        in: path
+        name: receiverId
+        required: true
+        type: string
+      - description: 'ID of the requesting user (format: User#<uuid>)'
+        in: query
+        name: userId
+        required: true
+        type: string
+      - description: Start of time range (RFC3339). Must be provided with endTime.
+        in: query
+        name: startTime
+        type: string
+      - description: End of time range (RFC3339). Must be provided with startTime.
+        in: query
+        name: endTime
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/event.Entry'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all care events for a receiver
+      tags:
+      - events
+  /events/configs:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/event.EventConfig'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all available event type configurations
+      tags:
+      - events
+  /feedback:
+    post:
+      parameters:
+      - description: Feedback message
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.FeedbackRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.FeedbackResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Submit user feedback (enqueues a notification via SQS)
+      tags:
+      - feedback
+  /receiver/{receiverId}:
+    get:
+      parameters:
+      - description: 'Receiver ID (format: Receiver#<uuid>)'
+        in: path
+        name: receiverId
+        required: true
+        type: string
+      - description: 'ID of the requesting user (format: User#<uuid>)'
+        in: query
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/receiver.Receiver'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get a receiver by ID
+      tags:
+      - receivers
+  /receiver/care-givers/{receiverId}:
+    get:
+      parameters:
+      - description: 'Receiver ID (format: Receiver#<uuid>)'
+        in: path
+        name: receiverId
+        required: true
+        type: string
+      - description: 'ID of the requesting user (format: User#<uuid>)'
+        in: query
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GetReceiverCareGiversResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all caregivers for a receiver
+      tags:
+      - receivers
+  /user:
+    post:
+      parameters:
+      - description: User details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateUserRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.CreateUserResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a new user account
+      tags:
+      - users
+  /user/{userId}:
+    get:
+      parameters:
+      - description: 'User ID (format: User#<uuid>)'
+        in: path
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get a user by ID
+      tags:
+      - users
+  /user/additional-receiver:
+    post:
+      parameters:
+      - description: User ID, receiver ID, and email of the caregiver to add
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AdditionalReceiverRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Add an additional caregiver to an existing receiver (requester must
+        be the primary caregiver)
+      tags:
+      - users
+  /user/primary-receiver:
+    post:
+      parameters:
+      - description: User and receiver details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PrimaryReceiverRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PrimaryReceiverResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Add a primary receiver for a user (creates the receiver and a primary
+        caregiver relationship)
+      tags:
+      - users
+  /user/relationships/{userId}:
+    get:
+      parameters:
+      - description: 'User ID (format: User#<uuid>)'
+        in: path
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GetUserRelationshipsResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all receiver relationships for a user
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

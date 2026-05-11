@@ -53,6 +53,13 @@ type GetUserRelationshipsResponse struct {
 	Status        string                      `json:"status"`
 }
 
+// @Summary Create a new user account
+// @Tags users
+// @Param body body CreateUserRequest true "User details"
+// @Success 200 {object} CreateUserResponse
+// @Failure 400 {string} string "Bad request"
+// @Failure 500 {string} string "Internal server error"
+// @Router /user [post]
 func HandleCreateUser(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, createUser)
 
@@ -85,6 +92,15 @@ func HandleCreateUser(ctx context.Context, params HandlerParams) (events.APIGate
 	return response.FormatResponse(resp, http.StatusOK), nil
 }
 
+// @Summary Get a user by ID
+// @Tags users
+// @Security BearerAuth
+// @Param userId path string true "User ID (format: User#<uuid>)"
+// @Success 200 {object} user.User
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /user/{userId} [get]
 func HandleGetUser(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, getUser)
 
@@ -104,6 +120,15 @@ func HandleGetUser(ctx context.Context, params HandlerParams) (events.APIGateway
 	return response.FormatResponse(u, http.StatusOK), nil
 }
 
+// @Summary Add a primary receiver for a user (creates the receiver and a primary caregiver relationship)
+// @Tags users
+// @Security BearerAuth
+// @Param body body PrimaryReceiverRequest true "User and receiver details"
+// @Success 200 {object} PrimaryReceiverResponse
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /user/primary-receiver [post]
 func HandleUserPrimaryReceiver(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, addPrimaryReceiver)
 
@@ -140,6 +165,15 @@ func HandleUserPrimaryReceiver(ctx context.Context, params HandlerParams) (event
 	return response.FormatResponse(resp, http.StatusOK), nil
 }
 
+// @Summary Add an additional caregiver to an existing receiver (requester must be the primary caregiver)
+// @Tags users
+// @Security BearerAuth
+// @Param body body AdditionalReceiverRequest true "User ID, receiver ID, and email of the caregiver to add"
+// @Success 200 {object} map[string]string
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /user/additional-receiver [post]
 func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, addAdditionalReceiver)
 
@@ -180,6 +214,15 @@ func HandleUserAdditionalReceiver(ctx context.Context, params HandlerParams) (ev
 	}, http.StatusOK), nil
 }
 
+// @Summary Get all receiver relationships for a user
+// @Tags users
+// @Security BearerAuth
+// @Param userId path string true "User ID (format: User#<uuid>)"
+// @Success 200 {object} GetUserRelationshipsResponse
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /user/relationships/{userId} [get]
 func HandleGetUserRelationships(ctx context.Context, params HandlerParams) (events.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, "get user relationships")
 
