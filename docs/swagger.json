@@ -9,6 +9,116 @@
     "host": "api.caretosher.com",
     "basePath": "/",
     "paths": {
+        "/receiver/care-givers/{receiverId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "receivers"
+                ],
+                "summary": "Get all caregivers for a receiver",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Receiver ID (format: Receiver#\u003cuuid\u003e)",
+                        "name": "receiverId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID of the requesting user (format: User#\u003cuuid\u003e)",
+                        "name": "userId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GetReceiverCareGiversResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/receiver/{receiverId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "receivers"
+                ],
+                "summary": "Get a receiver by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Receiver ID (format: Receiver#\u003cuuid\u003e)",
+                        "name": "receiverId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID of the requesting user (format: User#\u003cuuid\u003e)",
+                        "name": "userId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/receiver.Receiver"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user": {
             "post": {
                 "tags": [
@@ -268,6 +378,23 @@
                 }
             }
         },
+        "handlers.CareGiverResponse": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "isPrimary": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.CreateUserRequest": {
             "type": "object",
             "required": [
@@ -295,6 +422,17 @@
                 },
                 "userId": {
                     "type": "string"
+                }
+            }
+        },
+        "handlers.GetReceiverCareGiversResponse": {
+            "type": "object",
+            "properties": {
+                "careGivers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handlers.CareGiverResponse"
+                    }
                 }
             }
         },
@@ -338,6 +476,20 @@
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "receiver.Receiver": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "receiverId": {
                     "type": "string"
                 }
             }

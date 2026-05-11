@@ -13,6 +13,17 @@ definitions:
     - receiverId
     - userId
     type: object
+  handlers.CareGiverResponse:
+    properties:
+      firstName:
+        type: string
+      isPrimary:
+        type: boolean
+      lastName:
+        type: string
+      userId:
+        type: string
+    type: object
   handlers.CreateUserRequest:
     properties:
       email:
@@ -32,6 +43,13 @@ definitions:
         type: string
       userId:
         type: string
+    type: object
+  handlers.GetReceiverCareGiversResponse:
+    properties:
+      careGivers:
+        items:
+          $ref: '#/definitions/handlers.CareGiverResponse'
+        type: array
     type: object
   handlers.GetUserRelationshipsResponse:
     properties:
@@ -60,6 +78,15 @@ definitions:
       receiverId:
         type: string
       status:
+        type: string
+    type: object
+  receiver.Receiver:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      receiverId:
         type: string
     type: object
   relationship.Relationship:
@@ -92,6 +119,76 @@ info:
   title: CareToSher API
   version: "1.0"
 paths:
+  /receiver/{receiverId}:
+    get:
+      parameters:
+      - description: 'Receiver ID (format: Receiver#<uuid>)'
+        in: path
+        name: receiverId
+        required: true
+        type: string
+      - description: 'ID of the requesting user (format: User#<uuid>)'
+        in: query
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/receiver.Receiver'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get a receiver by ID
+      tags:
+      - receivers
+  /receiver/care-givers/{receiverId}:
+    get:
+      parameters:
+      - description: 'Receiver ID (format: Receiver#<uuid>)'
+        in: path
+        name: receiverId
+        required: true
+        type: string
+      - description: 'ID of the requesting user (format: User#<uuid>)'
+        in: query
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GetReceiverCareGiversResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all caregivers for a receiver
+      tags:
+      - receivers
   /user:
     post:
       parameters:

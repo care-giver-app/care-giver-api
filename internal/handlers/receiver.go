@@ -18,6 +18,16 @@ const (
 	getReceiverCareGivers = "get receiver care givers"
 )
 
+// @Summary Get a receiver by ID
+// @Tags receivers
+// @Security BearerAuth
+// @Param receiverId path string true "Receiver ID (format: Receiver#<uuid>)"
+// @Param userId query string true "ID of the requesting user (format: User#<uuid>)"
+// @Success 200 {object} receiver.Receiver
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /receiver/{receiverId} [get]
 func HandleReceiver(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, getReceiver)
 
@@ -65,6 +75,16 @@ type GetReceiverCareGiversResponse struct {
 	CareGivers []CareGiverResponse `json:"careGivers"`
 }
 
+// @Summary Get all caregivers for a receiver
+// @Tags receivers
+// @Security BearerAuth
+// @Param receiverId path string true "Receiver ID (format: Receiver#<uuid>)"
+// @Param userId query string true "ID of the requesting user (format: User#<uuid>)"
+// @Success 200 {object} GetReceiverCareGiversResponse
+// @Failure 400 {string} string "Bad request"
+// @Failure 403 {string} string "Access denied"
+// @Failure 500 {string} string "Internal server error"
+// @Router /receiver/care-givers/{receiverId} [get]
 func HandleGetReceiverCareGivers(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, getReceiverCareGivers)
 
