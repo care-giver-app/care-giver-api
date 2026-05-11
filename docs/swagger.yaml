@@ -1,4 +1,89 @@
 basePath: /
+definitions:
+  handlers.AdditionalReceiverRequest:
+    properties:
+      email:
+        type: string
+      receiverId:
+        type: string
+      userId:
+        type: string
+    required:
+    - email
+    - receiverId
+    - userId
+    type: object
+  handlers.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    type: object
+  handlers.CreateUserResponse:
+    properties:
+      status:
+        type: string
+      userId:
+        type: string
+    type: object
+  handlers.GetUserRelationshipsResponse:
+    properties:
+      relationships:
+        items:
+          $ref: '#/definitions/relationship.Relationship'
+        type: array
+      status:
+        type: string
+    type: object
+  handlers.PrimaryReceiverRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      userId:
+        type: string
+    required:
+    - firstName
+    - lastName
+    - userId
+    type: object
+  handlers.PrimaryReceiverResponse:
+    properties:
+      receiverId:
+        type: string
+      status:
+        type: string
+    type: object
+  relationship.Relationship:
+    properties:
+      emailNotifications:
+        type: boolean
+      primaryCareGiver:
+        type: boolean
+      receiverId:
+        type: string
+      userId:
+        type: string
+    type: object
+  user.User:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      userId:
+        type: string
+    type: object
 host: api.caretosher.com
 info:
   contact: {}
@@ -6,7 +91,158 @@ info:
     routes require a Cognito JWT except POST /user.
   title: CareToSher API
   version: "1.0"
-paths: {}
+paths:
+  /user:
+    post:
+      parameters:
+      - description: User details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateUserRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.CreateUserResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a new user account
+      tags:
+      - users
+  /user/{userId}:
+    get:
+      parameters:
+      - description: 'User ID (format: User#<uuid>)'
+        in: path
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get a user by ID
+      tags:
+      - users
+  /user/additional-receiver:
+    post:
+      parameters:
+      - description: User ID, receiver ID, and email of the caregiver to add
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AdditionalReceiverRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Add an additional caregiver to an existing receiver (requester must
+        be the primary caregiver)
+      tags:
+      - users
+  /user/primary-receiver:
+    post:
+      parameters:
+      - description: User and receiver details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PrimaryReceiverRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PrimaryReceiverResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Add a primary receiver for a user (creates the receiver and a primary
+        caregiver relationship)
+      tags:
+      - users
+  /user/relationships/{userId}:
+    get:
+      parameters:
+      - description: 'User ID (format: User#<uuid>)'
+        in: path
+        name: userId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GetUserRelationshipsResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "403":
+          description: Access denied
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all receiver relationships for a user
+      tags:
+      - users
 securityDefinitions:
   BearerAuth:
     in: header
