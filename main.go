@@ -70,6 +70,14 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 	return response.CreateBadRequestResponse(), nil
 }
 
+// @title CareToSher API
+// @version 1.0
+// @description REST API for the CareToSher care-giving collaboration platform. All routes require a Cognito JWT except POST /user.
+// @host api.caretosher.com
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	lambda.Start(handler)
 }

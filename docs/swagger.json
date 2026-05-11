@@ -1,7 +1,19 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "REST API for the CareToSher care-giving collaboration platform. All routes require a Cognito JWT except POST /user.",
+        "title": "CareToSher API",
+        "contact": {},
+        "version": "1.0"
     },
-    "paths": {}
+    "host": "api.caretosher.com",
+    "basePath": "/",
+    "paths": {},
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
 }
