@@ -11,6 +11,7 @@ import (
 	"github.com/care-giver-app/care-giver-golang-common/pkg/receiver"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/relationship"
 	pkgtracker "github.com/care-giver-app/care-giver-golang-common/pkg/tracker"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/user"
 	"go.uber.org/zap"
 )
 
@@ -42,11 +43,6 @@ type UpdateTrackerRequest struct {
 	IsActive        *bool                      `json:"isActive,omitempty"`
 }
 
-func extractUID(params HandlerParams) (string, bool) {
-	uid, ok := params.Request.RequestContext.Authorizer["custom:db_user_id"].(string)
-	return uid, ok && uid != ""
-}
-
 func isCareGiver(params HandlerParams, uid, rid string) (bool, error) {
 	rels, err := params.RelationshipRepo.GetRelationshipsByUser(uid)
 	if err != nil {
@@ -58,13 +54,14 @@ func isCareGiver(params HandlerParams, uid, rid string) (bool, error) {
 func HandleCreateTracker(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, createTracker)
 
-	uid, ok := extractUID(params)
-	if !ok {
+	uid, err := validateQueryParameters(params.Request, user.ParamID)
+	if err != nil {
+		params.AppCfg.Logger.Error(queryParamsError, zap.Error(err))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
 	var req CreateTrackerRequest
-	if err := readRequestBody(params.Request.Body, &req); err != nil {
+	if err = readRequestBody(params.Request.Body, &req); err != nil {
 		params.AppCfg.Logger.Error(requestBodyError, zap.Error(err))
 		return response.CreateBadRequestResponse(), nil
 	}
@@ -105,8 +102,9 @@ func HandleCreateTracker(ctx context.Context, params HandlerParams) (awsevents.A
 func HandleListTrackers(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, listTrackers)
 
-	uid, ok := extractUID(params)
-	if !ok {
+	uid, err := validateQueryParameters(params.Request, user.ParamID)
+	if err != nil {
+		params.AppCfg.Logger.Error(queryParamsError, zap.Error(err))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
@@ -143,8 +141,9 @@ func HandleListTrackers(ctx context.Context, params HandlerParams) (awsevents.AP
 func HandleGetTracker(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, getTracker)
 
-	uid, ok := extractUID(params)
-	if !ok {
+	uid, err := validateQueryParameters(params.Request, user.ParamID)
+	if err != nil {
+		params.AppCfg.Logger.Error(queryParamsError, zap.Error(err))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
@@ -187,8 +186,9 @@ func HandleGetTracker(ctx context.Context, params HandlerParams) (awsevents.APIG
 func HandleUpdateTracker(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, updateTracker)
 
-	uid, ok := extractUID(params)
-	if !ok {
+	uid, err := validateQueryParameters(params.Request, user.ParamID)
+	if err != nil {
+		params.AppCfg.Logger.Error(queryParamsError, zap.Error(err))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
@@ -280,8 +280,9 @@ func HandleUpdateTracker(ctx context.Context, params HandlerParams) (awsevents.A
 func HandleDeleteTracker(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, deleteTracker)
 
-	uid, ok := extractUID(params)
-	if !ok {
+	uid, err := validateQueryParameters(params.Request, user.ParamID)
+	if err != nil {
+		params.AppCfg.Logger.Error(queryParamsError, zap.Error(err))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 

@@ -23,10 +23,8 @@ func makeTrackerParams(req events.APIGatewayProxyRequest) HandlerParams {
 	}
 }
 
-func authedRequest(uid string) map[string]interface{} {
-	return map[string]interface{}{
-		"custom:db_user_id": uid,
-	}
+func userIDParam(uid string) map[string]string {
+	return map[string]string{"userId": uid}
 }
 
 func TestHandleCreateTracker(t *testing.T) {
@@ -45,41 +43,33 @@ func TestHandleCreateTracker(t *testing.T) {
 	}{
 		"Happy Path - Tracker Created": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodPost,
-				Body:       string(validBody),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodPost,
+				Body:                  string(validBody),
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedStatus: http.StatusOK,
 		},
-		"Sad Path - Missing JWT Claim": {
+		"Sad Path - Missing userId Query Param": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodPost,
-				Body:       string(validBody),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: map[string]interface{}{},
-				},
+				HTTPMethod:            http.MethodPost,
+				Body:                  string(validBody),
+				QueryStringParameters: map[string]string{},
 			},
 			expectedStatus: http.StatusForbidden,
 		},
 		"Sad Path - Bad Body": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodPost,
-				Body:       `{"receiverId": false}`,
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodPost,
+				Body:                  `{"receiverId": false}`,
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
 		"Sad Path - Not A CareGiver": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodPost,
-				Body:       string(validBody),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#NotACareGiver"),
-				},
+				HTTPMethod:            http.MethodPost,
+				Body:                  string(validBody),
+				QueryStringParameters: userIDParam("User#NotACareGiver"),
 			},
 			expectedStatus: http.StatusForbidden,
 		},
@@ -97,9 +87,7 @@ func TestHandleCreateTracker(t *testing.T) {
 					})
 					return string(b)
 				}(),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedStatus: http.StatusConflict,
 		},
@@ -117,9 +105,7 @@ func TestHandleCreateTracker(t *testing.T) {
 					})
 					return string(b)
 				}(),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedStatus: http.StatusInternalServerError,
 		},
@@ -137,9 +123,7 @@ func TestHandleCreateTracker(t *testing.T) {
 					})
 					return string(b)
 				}(),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
@@ -162,65 +146,49 @@ func TestHandleListTrackers(t *testing.T) {
 	}{
 		"Happy Path - Trackers Listed": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodGet,
-				PathParameters: map[string]string{
-					"receiverId": "Receiver#123",
-				},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"receiverId": "Receiver#123"},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: events.APIGatewayProxyResponse{StatusCode: http.StatusOK},
 		},
 		"Happy Path - Empty List Returns Array": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodGet,
-				PathParameters: map[string]string{
-					"receiverId": "Receiver#Empty",
-				},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"receiverId": "Receiver#Empty"},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: events.APIGatewayProxyResponse{StatusCode: http.StatusOK},
 		},
-		"Sad Path - Missing JWT Claim": {
+		"Sad Path - Missing userId Query Param": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: map[string]interface{}{},
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"receiverId": "Receiver#123"},
+				QueryStringParameters: map[string]string{},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
 		"Sad Path - Bad Path Parameter": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"wrongParam": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"wrongParam": "Receiver#123"},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
 		},
 		"Sad Path - Not A CareGiver": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#NotACareGiver"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"receiverId": "Receiver#123"},
+				QueryStringParameters: userIDParam("User#NotACareGiver"),
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
 		"Sad Path - Repo Error": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"receiverId": "Receiver#Error"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"receiverId": "Receiver#Error"},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
@@ -249,25 +217,17 @@ func TestHandleGetTracker(t *testing.T) {
 	}{
 		"Happy Path - Tracker Found": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{
-					"receiverId": "Receiver#123",
-				},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 			},
 			expectedResponse: events.APIGatewayProxyResponse{StatusCode: http.StatusOK},
 		},
-		"Sad Path - Missing JWT Claim Returns 403 Not 404": {
+		"Sad Path - Missing userId Query Param Returns 403 Not 404": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodGet,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
 				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: map[string]interface{}{},
-				},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
@@ -275,10 +235,7 @@ func TestHandleGetTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodGet,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#NotACareGiver"),
-				},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#NotACareGiver"},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
@@ -286,10 +243,7 @@ func TestHandleGetTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodGet,
 				PathParameters:        map[string]string{"trackerId": "Tracker#NotFound"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 			},
 			expectedResponse: response.CreateResourceNotFoundResponse(),
 		},
@@ -297,10 +251,7 @@ func TestHandleGetTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodGet,
 				PathParameters:        map[string]string{"wrong": "Tracker#123"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
 		},
@@ -308,10 +259,7 @@ func TestHandleGetTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodGet,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
 		},
@@ -319,10 +267,7 @@ func TestHandleGetTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodGet,
 				PathParameters:        map[string]string{"trackerId": "Tracker#Error"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
@@ -351,23 +296,17 @@ func TestHandleUpdateTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodPut,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 				Body:                  string(validUpdateBody),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
 			},
 			expectedResponse: events.APIGatewayProxyResponse{StatusCode: http.StatusOK},
 		},
-		"Sad Path - Missing JWT Claim": {
+		"Sad Path - Missing userId Query Param": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodPut,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
 				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
 				Body:                  string(validUpdateBody),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: map[string]interface{}{},
-				},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
@@ -375,11 +314,8 @@ func TestHandleUpdateTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodPut,
 				PathParameters:        map[string]string{"trackerId": "Tracker#NotFound"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 				Body:                  string(validUpdateBody),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
 			},
 			expectedResponse: response.CreateResourceNotFoundResponse(),
 		},
@@ -387,11 +323,8 @@ func TestHandleUpdateTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodPut,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 				Body:                  `{"kind": "event"}`,
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
 		},
@@ -399,11 +332,8 @@ func TestHandleUpdateTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodPut,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#NotACareGiver"},
 				Body:                  string(validUpdateBody),
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#NotACareGiver"),
-				},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
@@ -428,21 +358,15 @@ func TestHandleDeleteTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 			},
 			expectedResponse: response.FormatResponse(map[string]string{"status": response.Success}, http.StatusOK),
 		},
-		"Sad Path - Missing JWT Claim": {
+		"Sad Path - Missing userId Query Param": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
 				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: map[string]interface{}{},
-				},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
@@ -450,10 +374,7 @@ func TestHandleDeleteTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#NotACareGiver"),
-				},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#NotACareGiver"},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
@@ -461,10 +382,7 @@ func TestHandleDeleteTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
 				PathParameters:        map[string]string{"trackerId": "Tracker#NotFound"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 			},
 			expectedResponse: response.CreateResourceNotFoundResponse(),
 		},
@@ -472,10 +390,7 @@ func TestHandleDeleteTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
 				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
-				QueryStringParameters: map[string]string{},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
 		},
@@ -483,10 +398,7 @@ func TestHandleDeleteTracker(t *testing.T) {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
 				PathParameters:        map[string]string{"trackerId": "Tracker#Error"},
-				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 			},
 			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},

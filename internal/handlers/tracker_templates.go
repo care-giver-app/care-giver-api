@@ -8,6 +8,7 @@ import (
 	awsevents "github.com/aws/aws-lambda-go/events"
 	"github.com/care-giver-app/care-giver-api/internal/response"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/tracker"
+	"github.com/care-giver-app/care-giver-golang-common/pkg/user"
 	"go.uber.org/zap"
 )
 
@@ -19,8 +20,9 @@ const (
 func HandleListTrackerTemplates(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, listTrackerTemplates)
 
-	uid, ok := extractUID(params)
-	if !ok {
+	uid, err := validateQueryParameters(params.Request, user.ParamID)
+	if err != nil {
+		params.AppCfg.Logger.Error(queryParamsError, zap.Error(err))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
@@ -38,8 +40,9 @@ func HandleListTrackerTemplates(ctx context.Context, params HandlerParams) (awse
 func HandleGetTrackerTemplate(ctx context.Context, params HandlerParams) (awsevents.APIGatewayProxyResponse, error) {
 	params.AppCfg.Logger.Sugar().Infof(handlerStart, getTrackerTemplate)
 
-	uid, ok := extractUID(params)
-	if !ok {
+	uid, err := validateQueryParameters(params.Request, user.ParamID)
+	if err != nil {
+		params.AppCfg.Logger.Error(queryParamsError, zap.Error(err))
 		return response.CreateAccessDeniedResponse(), nil
 	}
 

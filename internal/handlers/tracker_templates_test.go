@@ -28,21 +28,17 @@ func TestHandleListTrackerTemplates(t *testing.T) {
 	}{
 		"Happy Path - Returns All 7 Templates": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodGet,
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedStatus:   http.StatusOK,
 			checkBody:        true,
 			expectedMinCount: 7,
 		},
-		"Sad Path - Missing JWT Claim": {
+		"Sad Path - Missing userId Query Param": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod: http.MethodGet,
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: map[string]interface{}{},
-				},
+				HTTPMethod:            http.MethodGet,
+				QueryStringParameters: map[string]string{},
 			},
 			expectedStatus: http.StatusForbidden,
 		},
@@ -72,53 +68,43 @@ func TestHandleGetTrackerTemplate(t *testing.T) {
 	}{
 		"Happy Path - Weight Template Found": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"templateName": "Weight"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"templateName": "Weight"},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: events.APIGatewayProxyResponse{StatusCode: http.StatusOK},
 			checkName:        "Weight",
 		},
 		"Happy Path - URL Encoded Name": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"templateName": "Doctor%20Appointment"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"templateName": "Doctor%20Appointment"},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: events.APIGatewayProxyResponse{StatusCode: http.StatusOK},
 			checkName:        "Doctor Appointment",
 		},
-		"Sad Path - Missing JWT Claim": {
+		"Sad Path - Missing userId Query Param": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"templateName": "Weight"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: map[string]interface{}{},
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"templateName": "Weight"},
+				QueryStringParameters: map[string]string{},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
 		},
 		"Sad Path - Missing templateName": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
 		},
 		"Sad Path - Unknown Template Name": {
 			request: events.APIGatewayProxyRequest{
-				HTTPMethod:     http.MethodGet,
-				PathParameters: map[string]string{"templateName": "NonExistentTemplate"},
-				RequestContext: events.APIGatewayProxyRequestContext{
-					Authorizer: authedRequest("User#123"),
-				},
+				HTTPMethod:            http.MethodGet,
+				PathParameters:        map[string]string{"templateName": "NonExistentTemplate"},
+				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: response.CreateResourceNotFoundResponse(),
 		},
