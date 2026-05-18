@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/care-giver-app/care-giver-golang-common/pkg/event"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/receiver"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/relationship"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/repository"
+	pkgtracker "github.com/care-giver-app/care-giver-golang-common/pkg/tracker"
 	"github.com/care-giver-app/care-giver-golang-common/pkg/user"
 )
 
@@ -160,6 +163,12 @@ func (mr *MockRelationshipRepo) GetRelationshipsByUser(uid string) ([]relationsh
 			},
 			{
 				UserID:             "User#123",
+				ReceiverID:         "Receiver#Empty",
+				PrimaryCareGiver:   true,
+				EmailNotifications: false,
+			},
+			{
+				UserID:             "User#123",
 				ReceiverID:         "Receiver#Error",
 				PrimaryCareGiver:   false,
 				EmailNotifications: false,
@@ -214,6 +223,89 @@ func (mr *MockRelationshipRepo) GetRelationship(userID string, receiverID string
 
 func (mr *MockRelationshipRepo) GetRelationshipsByEmailNotifications() ([]relationship.Relationship, error) {
 	return nil, errors.New("unsupported mock")
+}
+
+var testTrackerRepo = &MockTrackerRepo{}
+
+type MockTrackerRepo struct{}
+
+func (m *MockTrackerRepo) CreateTracker(t *pkgtracker.Tracker) error {
+	switch t.ReceiverID {
+	case "Receiver#123":
+		if strings.EqualFold(t.Name, "Duplicate Name") {
+			return fmt.Errorf("name already in use for this receiver")
+		}
+		return nil
+	case "Receiver#Error":
+		return errors.New("error creating tracker")
+	}
+	return errors.New("unsupported mock")
+}
+
+func (m *MockTrackerRepo) GetTracker(receiverID, trackerID string) (*pkgtracker.Tracker, error) {
+	switch trackerID {
+	case "Tracker#123":
+		return &pkgtracker.Tracker{
+			TrackerID:  "Tracker#123",
+			ReceiverID: receiverID,
+			Name:       "Blood Pressure",
+			Kind:       pkgtracker.KindMeasurement,
+			Fields:     []pkgtracker.TrackerField{{Name: "systolic", InputType: "number", Required: true}},
+			Icon:       "assets/icon.svg",
+			Color:      pkgtracker.ColorConfig{Primary: "#000", Secondary: "#fff"},
+			IsActive:   true,
+			CreatedAt:  "2026-01-01T00:00:00Z",
+			UpdatedAt:  "2026-01-01T00:00:00Z",
+		}, nil
+	case "Tracker#NotFound":
+		return nil, nil
+	case "Tracker#Error":
+		return nil, errors.New("error getting tracker")
+	}
+	return nil, errors.New("unsupported mock")
+}
+
+func (m *MockTrackerRepo) ListTrackers(receiverID string) ([]pkgtracker.Tracker, error) {
+	switch receiverID {
+	case "Receiver#123":
+		return []pkgtracker.Tracker{
+			{
+				TrackerID:  "Tracker#123",
+				ReceiverID: "Receiver#123",
+				Name:       "Blood Pressure",
+				Kind:       pkgtracker.KindMeasurement,
+				Fields:     []pkgtracker.TrackerField{},
+				IsActive:   true,
+				CreatedAt:  "2026-01-01T00:00:00Z",
+				UpdatedAt:  "2026-01-01T00:00:00Z",
+			},
+		}, nil
+	case "Receiver#Empty":
+		return []pkgtracker.Tracker{}, nil
+	case "Receiver#Error":
+		return nil, errors.New("error listing trackers")
+	}
+	return nil, errors.New("unsupported mock")
+}
+
+func (m *MockTrackerRepo) UpdateTracker(t *pkgtracker.Tracker) error {
+	switch t.TrackerID {
+	case "Tracker#123":
+		return nil
+	case "Tracker#Error":
+		return errors.New("error updating tracker")
+	}
+	return errors.New("unsupported mock")
+}
+
+func (m *MockTrackerRepo) DeleteTracker(receiverID, trackerID string) error {
+	switch trackerID {
+	case "Tracker#123":
+		return nil
+	case "Tracker#Error":
+		return errors.New("error deleting tracker")
+	}
+	return errors.New("unsupported mock")
 }
 
 func (mr *MockRelationshipRepo) GetRelationshipsByReceiver(rid string) ([]relationship.Relationship, error) {

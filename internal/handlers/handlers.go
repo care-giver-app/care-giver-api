@@ -29,6 +29,7 @@ type HandlerParams struct {
 	ReceiverRepo     repository.ReceiverRepositoryProvider
 	EventRepo        repository.EventRepositoryProvider
 	RelationshipRepo repository.RelationshipRepositoryProvider
+	TrackerRepo      repository.TrackerRepositoryProvider
 }
 
 type Endpoint struct {
@@ -51,6 +52,13 @@ var handlersMap = map[Endpoint]HandlerFunc{
 	{"/events/{receiverId}", http.MethodGet}:         HandleGetReceiverEvents,
 	{"/events/configs", http.MethodGet}:              HandleGetEventConfigs,
 	{"/feedback", http.MethodPost}:                   HandleFeedbackRequest,
+	{"/tracker", http.MethodPost}:                             HandleCreateTracker,
+	{"/trackers/{receiverId}", http.MethodGet}:               HandleListTrackers,
+	{"/tracker/{trackerId}", http.MethodGet}:                 HandleGetTracker,
+	{"/tracker/{trackerId}", http.MethodPut}:                 HandleUpdateTracker,
+	{"/tracker/{trackerId}", http.MethodDelete}:              HandleDeleteTracker,
+	{"/trackers/templates", http.MethodGet}:                  HandleListTrackerTemplates,
+	{"/trackers/templates/{templateName}", http.MethodGet}:   HandleGetTrackerTemplate,
 }
 
 type RegistryProvider interface {
@@ -64,15 +72,17 @@ type Registry struct {
 	ReceiverRepo     repository.ReceiverRepositoryProvider
 	EventRepo        repository.EventRepositoryProvider
 	RelationshipRepo repository.RelationshipRepositoryProvider
+	TrackerRepo      repository.TrackerRepositoryProvider
 }
 
-func NewRegistry(appCfg *appconfig.AppConfig, userRepo repository.UserRepositoryProvider, receiverRepo repository.ReceiverRepositoryProvider, eventRepo repository.EventRepositoryProvider, relationshipRepo repository.RelationshipRepositoryProvider) *Registry {
+func NewRegistry(appCfg *appconfig.AppConfig, userRepo repository.UserRepositoryProvider, receiverRepo repository.ReceiverRepositoryProvider, eventRepo repository.EventRepositoryProvider, relationshipRepo repository.RelationshipRepositoryProvider, trackerRepo repository.TrackerRepositoryProvider) *Registry {
 	return &Registry{
 		AppCfg:           appCfg,
 		UserRepo:         userRepo,
 		ReceiverRepo:     receiverRepo,
 		EventRepo:        eventRepo,
 		RelationshipRepo: relationshipRepo,
+		TrackerRepo:      trackerRepo,
 	}
 }
 
@@ -94,6 +104,7 @@ func (r *Registry) RunHandler(ctx context.Context, handler HandlerFunc, request 
 		ReceiverRepo:     r.ReceiverRepo,
 		EventRepo:        r.EventRepo,
 		RelationshipRepo: r.RelationshipRepo,
+		TrackerRepo:      r.TrackerRepo,
 	}
 
 	return handler(ctx, params)

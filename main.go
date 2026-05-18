@@ -27,6 +27,7 @@ var (
 	receiverRepo     *repository.ReceiverRepository
 	eventRepo        *repository.EventRepository
 	relationshipRepo *repository.RelationshipRepository
+	trackerRepo      *repository.TrackerRepository
 	handlerRegistry  handlers.RegistryProvider
 )
 
@@ -55,8 +56,11 @@ func init() {
 	appCfg.Logger.Info("initializing relationship repository")
 	relationshipRepo = repository.NewRelationshipRepository(context.TODO(), appCfg.RelationshipTableName, dynamoClient, appCfg.Logger)
 
+	appCfg.Logger.Info("initializing tracker repository")
+	trackerRepo = repository.NewTrackerRepository(context.TODO(), appCfg.TrackerTableName, dynamoClient, appCfg.Logger)
+
 	appCfg.Logger.Info("initializing handler registry")
-	handlerRegistry = handlers.NewRegistry(appCfg, userRepo, receiverRepo, eventRepo, relationshipRepo)
+	handlerRegistry = handlers.NewRegistry(appCfg, userRepo, receiverRepo, eventRepo, relationshipRepo, trackerRepo)
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
