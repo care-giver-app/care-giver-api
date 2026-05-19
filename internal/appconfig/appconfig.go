@@ -22,6 +22,7 @@ type AppConfig struct {
 	EventTableName        string
 	RelationshipTableName string
 	FeedbackQueueURL      string
+	TrackerTableName      string
 }
 
 func NewAppConfig() *AppConfig {
@@ -42,6 +43,7 @@ func (a *AppConfig) ReadEnvVars() {
 	a.EventTableName = getEnvVarStringOrDefault("EVENT_TABLE_NAME", fmt.Sprintf("%s-%s", "event-table", LocalEnv))
 	a.RelationshipTableName = getEnvVarStringOrDefault("RELATIONSHIP_TABLE_NAME", fmt.Sprintf("%s-%s", "relationship-table", LocalEnv))
 	a.FeedbackQueueURL = getEnvVarStringOrDefault("FEEDBACK_QUEUE_URL", "")
+	a.TrackerTableName = getEnvVarStringOrDefault("TRACKER_TABLE_NAME", fmt.Sprintf("%s-%s", "tracker-table", LocalEnv))
 }
 
 func getEnvVarStringOrDefault(envVar string, defaultValue string) string {

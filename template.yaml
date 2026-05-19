@@ -63,6 +63,7 @@ Resources:
           - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/event-table-${Env}/index/receiver-start-time
           - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/relationship-table-${Env}
           - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/relationship-table-${Env}/index/*
+          - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/tracker-table-${Env}
       Roles:
       - Ref: CareGiverAPIRole
     Metadata:
@@ -212,6 +213,57 @@ Resources:
             RestApiId: !Ref CareGiverAPI
             Path: /feedback
             Method: POST
+        CreateTracker:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /tracker
+            Method: POST
+        ListTrackers:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /trackers/{receiverId}
+            Method: GET
+        GetTracker:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /tracker/{trackerId}
+            Method: GET
+            RequestParameters:
+              - method.request.querystring.receiverId:
+                  Required: true
+        UpdateTracker:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /tracker/{trackerId}
+            Method: PUT
+            RequestParameters:
+              - method.request.querystring.receiverId:
+                  Required: true
+        DeleteTracker:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /tracker/{trackerId}
+            Method: DELETE
+            RequestParameters:
+              - method.request.querystring.receiverId:
+                  Required: true
+        ListTrackerTemplates:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /trackers/templates
+            Method: GET
+        GetTrackerTemplate:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CareGiverAPI
+            Path: /trackers/templates/{templateName}
+            Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           ENV: !Ref Env
@@ -220,6 +272,23 @@ Resources:
           EVENT_TABLE_NAME: !Sub event-table-${Env}
           RELATIONSHIP_TABLE_NAME: !Sub relationship-table-${Env}
           FEEDBACK_QUEUE_URL: !Sub https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/care-giver-notifications-${Env}
+          TRACKER_TABLE_NAME: !Sub tracker-table-${Env}
+
+  TrackerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub tracker-table-${Env}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: receiver_id
+          AttributeType: S
+        - AttributeName: tracker_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: receiver_id
+          KeyType: HASH
+        - AttributeName: tracker_id
+          KeyType: RANGE
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

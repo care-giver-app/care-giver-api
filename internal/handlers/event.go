@@ -25,7 +25,7 @@ const (
 type ReceiverEventRequest struct {
 	ReceiverID string            `json:"receiverId" validate:"required"`
 	UserID     string            `json:"userId" validate:"required"`
-	Type       string            `json:"type" validate:"required"`
+	TrackerID  string            `json:"trackerId" validate:"required"`
 	StartTime  string            `json:"startTime" validate:"required"`
 	EndTime    string            `json:"endTime" validate:"required"`
 	Data       []event.DataPoint `json:"data"`
@@ -72,6 +72,16 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 		return response.CreateAccessDeniedResponse(), nil
 	}
 
+	t, err := params.TrackerRepo.GetTracker(rer.ReceiverID, rer.TrackerID)
+	if err != nil {
+		params.AppCfg.Logger.Error("error retrieving tracker for event", zap.String(log.ReceiverIDLogKey, rer.ReceiverID), zap.Error(err))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+	if t == nil {
+		params.AppCfg.Logger.Error("tracker not found for event", zap.String(log.ReceiverIDLogKey, rer.ReceiverID))
+		return response.CreateBadRequestResponse(), nil
+	}
+
 	opts := []event.EntryOption{}
 	if len(rer.Data) > 0 {
 		opts = append(opts, event.WithData(rer.Data))
@@ -81,11 +91,7 @@ func HandleReceiverEvent(ctx context.Context, params HandlerParams) (awsevents.A
 		opts = append(opts, event.WithNote(rer.Note))
 	}
 
-	newEvent, err := event.NewEntry(rer.ReceiverID, u.UserID, rer.Type, rer.StartTime, rer.EndTime, opts...)
-	if err != nil {
-		params.AppCfg.Logger.Error("error creating new event entry", zap.Error(err))
-		return response.CreateBadRequestResponse(), nil
-	}
+	newEvent := event.NewTrackerEntry(rer.ReceiverID, u.UserID, rer.TrackerID, rer.StartTime, rer.EndTime, opts...)
 
 	err = params.EventRepo.AddEvent(newEvent)
 	if err != nil {

@@ -298,6 +298,12 @@ func TestHandlerGetUserRelationships(t *testing.T) {
 					},
 					{
 						UserID:             "User#123",
+						ReceiverID:         "Receiver#Empty",
+						PrimaryCareGiver:   true,
+						EmailNotifications: false,
+					},
+					{
+						UserID:             "User#123",
 						ReceiverID:         "Receiver#Error",
 						PrimaryCareGiver:   false,
 						EmailNotifications: false,
