@@ -317,6 +317,18 @@ func HandleDeleteTracker(ctx context.Context, params HandlerParams) (awsevents.A
 		return response.CreateResourceNotFoundResponse(), nil
 	}
 
+	hasEvents, err := params.EventRepo.HasEventsForTracker(rid, tid)
+	if err != nil {
+		params.AppCfg.Logger.Error("error checking events for tracker", zap.String(log.ReceiverIDLogKey, rid), zap.String("tracker_id", tid))
+		return response.CreateInternalServerErrorResponse(), nil
+	}
+	if hasEvents {
+		return response.FormatResponse(
+			response.ErrorResponse{Status: "Conflict", DeveloperText: "This tracker has associated events. Deactivate it instead of deleting it."},
+			http.StatusConflict,
+		), nil
+	}
+
 	if err := params.TrackerRepo.DeleteTracker(rid, tid); err != nil {
 		params.AppCfg.Logger.Error("error deleting tracker", zap.String(log.ReceiverIDLogKey, rid), zap.String(log.UserIDLogKey, uid))
 		return response.CreateInternalServerErrorResponse(), nil

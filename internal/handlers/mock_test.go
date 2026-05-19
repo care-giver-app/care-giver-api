@@ -149,6 +149,20 @@ func (me *MockEventRepo) DeleteEvent(rid, eid string) error {
 	return errors.New("unsupported mock")
 }
 
+func (me *MockEventRepo) HasEventsForTracker(receiverID, trackerID string) (bool, error) {
+	switch trackerID {
+	case "Tracker#123":
+		return true, nil
+	case "Tracker#NoEvents":
+		return false, nil
+	case "Tracker#EventCheckError":
+		return false, errors.New("error checking events for tracker")
+	case "Tracker#NotFound":
+		return false, nil
+	}
+	return false, nil
+}
+
 type MockRelationshipRepo struct{}
 
 func (mr *MockRelationshipRepo) GetRelationshipsByUser(uid string) ([]relationship.Relationship, error) {
@@ -257,6 +271,32 @@ func (m *MockTrackerRepo) GetTracker(receiverID, trackerID string) (*pkgtracker.
 			CreatedAt:  "2026-01-01T00:00:00Z",
 			UpdatedAt:  "2026-01-01T00:00:00Z",
 		}, nil
+	case "Tracker#456":
+		return &pkgtracker.Tracker{
+			TrackerID:  "Tracker#456",
+			ReceiverID: receiverID,
+			Name:       "Shower",
+			Kind:       pkgtracker.KindEvent,
+			Fields:     []pkgtracker.TrackerField{},
+			Icon:       "assets/shower-icon.svg",
+			Color:      pkgtracker.ColorConfig{Primary: "#1E90FF", Secondary: "#D1E8FF"},
+			IsActive:   true,
+			CreatedAt:  "2026-01-01T00:00:00Z",
+			UpdatedAt:  "2026-01-01T00:00:00Z",
+		}, nil
+	case "Tracker#EventCheckError":
+		return &pkgtracker.Tracker{
+			TrackerID:  "Tracker#EventCheckError",
+			ReceiverID: receiverID,
+			Name:       "Walk",
+			Kind:       pkgtracker.KindEvent,
+			Fields:     []pkgtracker.TrackerField{},
+			Icon:       "assets/walk-icon.svg",
+			Color:      pkgtracker.ColorConfig{Primary: "#990000", Secondary: "#ff6666"},
+			IsActive:   true,
+			CreatedAt:  "2026-01-01T00:00:00Z",
+			UpdatedAt:  "2026-01-01T00:00:00Z",
+		}, nil
 	case "Tracker#NotFound":
 		return nil, nil
 	case "Tracker#Error":
@@ -300,7 +340,7 @@ func (m *MockTrackerRepo) UpdateTracker(t *pkgtracker.Tracker) error {
 
 func (m *MockTrackerRepo) DeleteTracker(receiverID, trackerID string) error {
 	switch trackerID {
-	case "Tracker#123":
+	case "Tracker#123", "Tracker#456":
 		return nil
 	case "Tracker#Error":
 		return errors.New("error deleting tracker")

@@ -24,8 +24,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 			requestMethod: http.MethodPost,
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
-				"userID":     "User#123",
-				"type":       "Shower",
+				"userId":     "User#123",
+				"trackerId":  "Tracker#123",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
 			},
@@ -39,8 +39,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 			requestMethod: http.MethodPost,
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
-				"userID":     "User#123",
-				"type":       "Shower",
+				"userId":     "User#123",
+				"trackerId":  "Tracker#123",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
 			},
@@ -54,8 +54,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 			requestMethod: http.MethodPost,
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
-				"userID":     "User#123",
-				"type":       "Shower",
+				"userId":     "User#123",
+				"trackerId":  "Tracker#123",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
 				"data": []event.DataPoint{
@@ -84,7 +84,7 @@ func TestHandleReceiverEvent(t *testing.T) {
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
 				"userId":     "User#Error",
-				"type":       "Shower",
+				"trackerId":  "Tracker#123",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
 			},
@@ -95,7 +95,7 @@ func TestHandleReceiverEvent(t *testing.T) {
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
 				"userId":     "User#RelationshipError",
-				"type":       "Shower",
+				"trackerId":  "Tracker#123",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
 			},
@@ -106,29 +106,40 @@ func TestHandleReceiverEvent(t *testing.T) {
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
 				"userId":     "User#NotACareGiver",
-				"type":       "Shower",
+				"trackerId":  "Tracker#123",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedStatusCode: http.StatusForbidden,
 		},
-		"Sad Path - Bad Event Name": {
+		"Sad Path - Tracker Not Found": {
 			requestMethod: http.MethodPost,
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
 				"userId":     "User#123",
-				"type":       "badEventType",
+				"trackerId":  "Tracker#NotFound",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
 			},
 			expectedStatusCode: http.StatusBadRequest,
+		},
+		"Sad Path - Tracker Repo Error": {
+			requestMethod: http.MethodPost,
+			requestBody: map[string]interface{}{
+				"receiverId": "Receiver#123",
+				"userId":     "User#123",
+				"trackerId":  "Tracker#Error",
+				"startTime":  "2023-10-01T12:00:00Z",
+				"endTime":    "2024-10-01T12:00:00Z",
+			},
+			expectedStatusCode: http.StatusInternalServerError,
 		},
 		"Sad Path - Bad Event Data": {
 			requestMethod: http.MethodPost,
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
 				"userId":     "User#123",
-				"type":       "Weight",
+				"trackerId":  "Tracker#123",
 				"data":       "wrongDataType",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
@@ -140,7 +151,7 @@ func TestHandleReceiverEvent(t *testing.T) {
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#Error",
 				"userId":     "User#123",
-				"type":       "Weight",
+				"trackerId":  "Tracker#123",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2024-10-01T12:00:00Z",
 			},
@@ -150,8 +161,8 @@ func TestHandleReceiverEvent(t *testing.T) {
 			requestMethod: http.MethodPost,
 			requestBody: map[string]interface{}{
 				"receiverId": "Receiver#123",
-				"userID":     "User#123",
-				"type":       "Shower",
+				"userId":     "User#123",
+				"trackerId":  "Tracker#123",
 				"startTime":  "2023-10-01T12:00:00Z",
 				"endTime":    "2023-09-01T12:00:00Z",
 			},
@@ -174,6 +185,7 @@ func TestHandleReceiverEvent(t *testing.T) {
 				ReceiverRepo:     testReceiverRepo,
 				EventRepo:        testEventRepo,
 				RelationshipRepo: testRelationshipRepo,
+				TrackerRepo:      testTrackerRepo,
 			}
 			resp, err := HandleReceiverEvent(context.Background(), params)
 			assert.Nil(t, err)

@@ -20,6 +20,7 @@ func makeTrackerParams(req events.APIGatewayProxyRequest) HandlerParams {
 		ReceiverRepo:     testReceiverRepo,
 		RelationshipRepo: testRelationshipRepo,
 		TrackerRepo:      testTrackerRepo,
+		EventRepo:        testEventRepo,
 	}
 }
 
@@ -357,7 +358,7 @@ func TestHandleDeleteTracker(t *testing.T) {
 		"Happy Path - Tracker Deleted": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
-				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
+				PathParameters:        map[string]string{"trackerId": "Tracker#456"},
 				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
 			},
 			expectedResponse: response.FormatResponse(map[string]string{"status": response.Success}, http.StatusOK),
@@ -365,7 +366,7 @@ func TestHandleDeleteTracker(t *testing.T) {
 		"Sad Path - Missing userId Query Param": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
-				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
+				PathParameters:        map[string]string{"trackerId": "Tracker#456"},
 				QueryStringParameters: map[string]string{"receiverId": "Receiver#123"},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
@@ -373,7 +374,7 @@ func TestHandleDeleteTracker(t *testing.T) {
 		"Sad Path - Not A CareGiver": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
-				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
+				PathParameters:        map[string]string{"trackerId": "Tracker#456"},
 				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#NotACareGiver"},
 			},
 			expectedResponse: response.CreateAccessDeniedResponse(),
@@ -389,10 +390,29 @@ func TestHandleDeleteTracker(t *testing.T) {
 		"Sad Path - Missing receiverId Query Param": {
 			request: events.APIGatewayProxyRequest{
 				HTTPMethod:            http.MethodDelete,
-				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
+				PathParameters:        map[string]string{"trackerId": "Tracker#456"},
 				QueryStringParameters: userIDParam("User#123"),
 			},
 			expectedResponse: response.CreateBadRequestResponse(),
+		},
+		"Sad Path - Tracker Has Events": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod:            http.MethodDelete,
+				PathParameters:        map[string]string{"trackerId": "Tracker#123"},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
+			},
+			expectedResponse: response.FormatResponse(
+				response.ErrorResponse{Status: "Conflict", DeveloperText: "This tracker has associated events. Deactivate it instead of deleting it."},
+				http.StatusConflict,
+			),
+		},
+		"Sad Path - Event Check Error": {
+			request: events.APIGatewayProxyRequest{
+				HTTPMethod:            http.MethodDelete,
+				PathParameters:        map[string]string{"trackerId": "Tracker#EventCheckError"},
+				QueryStringParameters: map[string]string{"receiverId": "Receiver#123", "userId": "User#123"},
+			},
+			expectedResponse: response.CreateInternalServerErrorResponse(),
 		},
 		"Sad Path - Repo Delete Error": {
 			request: events.APIGatewayProxyRequest{
